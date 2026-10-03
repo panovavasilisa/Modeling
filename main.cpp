@@ -1,19 +1,37 @@
 #include <QCoreApplication>
 
+#include "back/customer.h"
+#include "back/data.h"
+#include "back/medicine.h"
+#include "back/order.h"
+#include "back/request.h"
+#include "back/statistics.h"
+#include "back/store.h"
+#include "back/data_generator.h"
+
+// инициализация ввод N M K наценки создание постоянных клиентов и начального запаса склада
+void init_simulation();
+
+//генерация заказов на сегодня добавление разовых клиентов в массив и проверка расписания постоянных
+void generate_daily_events(int current_day);
+
+// выполнение заказов курьеры развозят товары склад списывает проданное обновляеться статистика
+void process_daily_order(int current_day); 
+
+// работа со складом проверка сроков годности и если нужно дозакупка
+void manage_warehouse(int current_day);
+
+// удаление не постоянных клиентов из масива коиентов (в конце дня)
+void cleanup_random_customers();
+
+// вывод финального отчета
+void print_final_statistics();
+
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    // Set up code that uses the Qt event loop here.
-    // Call a.quit() or a.exit() to quit the application.
-    // A not very useful example would be including
-    // #include <QTimer>
-    // near the top of the file and calling
-    // QTimer::singleShot(5000, &a, &QCoreApplication::quit);
-    // which quits the application after 5 seconds.
-
-    // If you do not need a running Qt event loop, remove the call
-    // to a.exec() or use the Non-Qt Plain C++ Application template.
 
     return a.exec();
 }
