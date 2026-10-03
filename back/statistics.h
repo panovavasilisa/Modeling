@@ -1,3 +1,4 @@
+#pragma once
 //статистика
 class Statistics {
     public:

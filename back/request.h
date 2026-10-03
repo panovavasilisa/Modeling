@@ -1,3 +1,4 @@
+#pragma once
 //заявка поставщику
 class Request {
     public:
