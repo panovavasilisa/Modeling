@@ -14,4 +14,5 @@ class Customer{
 
         std::vector<std::pair<int, int>> regular_purchases;  // постоянные покупки если !is_regular то nullptr
         int periodicity;  // переодичность постоянной покупки
-    }; 
+        int next_purchase_day; // следующий день пост покупки
+}; 
