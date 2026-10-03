@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "statistics.h"
 
 // партия на складе
 class StoreBatch {
@@ -18,6 +19,7 @@ class Warehouse{
     public:
         std::vector <StoreBatch> inventory;
 
-        void write_off(); //списать просроченые партии в убыток и уценить товары с истекающим сроком годности
+        void add_batch(const StoreBatch& batch); // положить приехавшую партию на склад
+        void write_off(int current_day); //списать просроченые партии в убыток и уценить товары с истекающим сроком годности
         bool need_restock(); // проверить упало ли кол-во каких либо лекарств меньше чем их min_stock 
 };
