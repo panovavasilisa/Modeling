@@ -1,0 +1,20 @@
+# Qt Creator
+.qtcreator/
+*.pro.user
+*.pro.user.*
+
+# Сборка
+build-*/
+Makefile
+Makefile.*
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.lib
+debug/
+release/
+.qmake.stash
+.qmake.cache
