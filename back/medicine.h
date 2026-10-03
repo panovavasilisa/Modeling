@@ -1,3 +1,4 @@
+#pragma once
 //Лекартсва
 class Medicine {
     public:
