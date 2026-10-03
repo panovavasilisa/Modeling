@@ -1,5 +1,7 @@
 #pragma once
 #include <vector>
+#include "store.h"
+#include "statistics.h"
 
 //заказ
 class Order{
@@ -7,4 +9,7 @@ class Order{
         int customer_idx;  // индекс массива клиентов
         std::vector <std::pair<int, int>> items; // список заказа (индекс из mas_med и кол-во)
         double final_price; // цена с учетом скидок
+
+        bool process_order(Warehouse& warehouse, Statistics& stats, double markup_percent);
+        // обработка заказа (проверка склада списание расчет наценки и скидок)
 };
