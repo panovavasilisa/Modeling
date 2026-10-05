@@ -1,4 +1,4 @@
-#include <QCoreApplication>
+#include <QApplication>
 
 #include "back/customer.h"
 #include "back/data.h"
@@ -30,7 +30,7 @@ void print_final_statistics();
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
+    QApplication a(argc, argv);
 
 
     return a.exec();
