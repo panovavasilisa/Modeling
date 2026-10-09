@@ -1,6 +1,7 @@
-QT = core
+QT = core widgets
 
 CONFIG += c++17 cmdline
+INCLUDEPATH += $$PWD $$PWD/back
 
 # You can make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -14,7 +15,10 @@ SOURCES += \
         order.cpp \
         request.cpp \
         statistics.cpp \
-        store.cpp
+        store.cpp \
+        data_generator.cpp \
+        internal/model_support.cpp \
+        internal/supply_manager.cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -28,4 +32,7 @@ HEADERS += \
     back/order.h \
     back/request.h \
     back/statistics.h \
-    back/store.h
+    back/store.h \
+    back/data_generator.h \
+    internal/model_support.h \
+    internal/supply_manager.h
