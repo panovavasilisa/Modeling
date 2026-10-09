@@ -1,4 +1,5 @@
-#include <QCoreApplication>
+#include "mainwindow.h"
+#include <QApplication>
 
 #include "back/customer.h"
 #include "back/data.h"
@@ -30,8 +31,9 @@ void print_final_statistics();
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
+    QApplication a(argc, argv);
 
-
+    MainWindow w;
+    w.show();
     return a.exec();
 }
