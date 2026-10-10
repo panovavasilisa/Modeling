@@ -2,6 +2,8 @@
 #include <QMainWindow>
 #include <QTimer>
 
+#include "back/simulation.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -27,6 +29,7 @@ private:
     int day;
     int totalDays;
 
+    SimulationParameters buildParameters() const;
     void doStep();
     void refreshAllTabs();
 };

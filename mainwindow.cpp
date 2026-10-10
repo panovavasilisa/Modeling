@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 
 #include "back/data.h"
-#include "back/data_generator.h"
 #include "internal/model_support.h"
 
 MainWindow::MainWindow(QWidget* parent)
@@ -10,7 +9,7 @@ MainWindow::MainWindow(QWidget* parent)
 {
     ui->setupUi(this);
 
-    // Таймер симуляции
+    // Таймер
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::tick);
 
@@ -23,70 +22,78 @@ MainWindow::MainWindow(QWidget* parent)
     onSpeedChanged(5);
 
     // Диапазоны по ТЗ
-    ui->daysSpin->setRange(10, 25);
-    ui->daysSpin->setValue(15);
-    ui->couriersSpin->setRange(3, 9);
-    ui->couriersSpin->setValue(4);
-    ui->medicinesSpin->setRange(15, 35);
-    ui->medicinesSpin->setValue(20);
-    ui->markupSpin->setRange(0.0, 100.0);
-    ui->markupSpin->setValue(25.0);
-    ui->cardDiscountSpin->setRange(0.0, 9.0);
-    ui->cardDiscountSpin->setValue(5.0);
-    ui->regularDiscountSpin->setRange(0.0, 9.0);
-    ui->regularDiscountSpin->setValue(5.0);
-    ui->bigOrderDiscountSpin->setRange(0.0, 9.0);
-    ui->bigOrderDiscountSpin->setValue(3.0);
-    ui->maxDiscountSpin->setRange(0.0, 9.0);
-    ui->maxDiscountSpin->setValue(9.0);
+    ui->daysSpin->setRange(10, 25);        ui->daysSpin->setValue(15);
+    ui->couriersSpin->setRange(3, 9);      ui->couriersSpin->setValue(5);
+    ui->medicinesSpin->setRange(15, 35);   ui->medicinesSpin->setValue(25);
+    ui->markupSpin->setRange(0.0, 100.0);  ui->markupSpin->setValue(25.0);
+    ui->cardDiscountSpin->setRange(0.0, 9.0);     ui->cardDiscountSpin->setValue(5.0);
+    ui->regularDiscountSpin->setRange(0.0, 9.0);  ui->regularDiscountSpin->setValue(5.0);
+    ui->bigOrderDiscountSpin->setRange(0.0, 9.0); ui->bigOrderDiscountSpin->setValue(3.0);
+    ui->maxDiscountSpin->setRange(0.0, 9.0);      ui->maxDiscountSpin->setValue(9.0);
+    ui->thresholdSpin->setValue(10);
+    ui->expiryDaysSpin->setValue(30);
+    ui->ordersPerDaySpin->setValue(20);
+    ui->discountedProbSpin->setRange(0, 100);
+    ui->discountedProbSpin->setValue(30);
 
     refreshAllTabs();
 }
 
 MainWindow::~MainWindow() { delete ui; }
 
+SimulationParameters MainWindow::buildParameters() const {
+    SimulationParameters p;
+    p.days               = ui->daysSpin->value();
+    p.couriers           = ui->couriersSpin->value();
+    p.medicine_count     = ui->medicinesSpin->value();
+    p.markup_percent     = ui->markupSpin->value();
+    p.card_discount      = ui->cardDiscountSpin->value();
+    p.large_purchase_discount = ui->bigOrderDiscountSpin->value();
+    p.regular_discount   = ui->regularDiscountSpin->value();
+    p.maximum_discount   = ui->maxDiscountSpin->value();
+    p.regular_customers  = 10;
+    p.seed               = 5489;
+    return p;
+}
+
 void MainWindow::on_generateBtn_clicked() {
-    // 1. Сброс глобального состояния модели
-    model_detail::context().reset(42);
-    warehouse.inventory.clear();
+    timer->stop();
+    day = 0;
+    ui->lineEdit->setText("0");
 
-    // 2. Считываем параметры из UI
-    K = ui->medicinesSpin->value();
-    N = ui->daysSpin->value();
-    M = ui->couriersSpin->value();
-    global_marcup = ui->markupSpin->value();
-    totalDays = N;
-
-    // 3. Скидки — в контекст
-    model_detail::context().discounts.card_percent          = ui->cardDiscountSpin->value();
-    model_detail::context().discounts.regular_percent       = ui->regularDiscountSpin->value();
-    model_detail::context().discounts.large_purchase_percent= ui->bigOrderDiscountSpin->value();
-    model_detail::context().discounts.maximum_percent       = ui->maxDiscountSpin->value();
-
-    // 4. Генерация
-    DataGenerator gen;
-    gen.generate_catalog(K);
-    gen.generate_warehouse(0);
-    gen.generate_customers(10);   // 10 постоянных покупателей
-
-    // 5. Обновить UI
-    refreshAllTabs();
+    const auto params = buildParameters();
+    totalDays = params.days;
 
     ui->logTab->clear();
-    ui->logTab->append(QString("=== Симуляция инициализирована ==="));
-    ui->logTab->append(QString("Дней (N): %1, Курьеров (M): %2, Лекарств (K): %3")
-                           .arg(N).arg(M).arg(K));
-    ui->logTab->append(QString("Наценка: %1%, Скидка по карте: %2%")
-                           .arg(global_marcup).arg(ui->cardDiscountSpin->value()));
+    ui->logTab->append("=== Инициализация симуляции ===");
+    ui->logTab->append(QString("Дней: %1, Курьеров: %2, Лекарств: %3")
+                           .arg(params.days).arg(params.couriers).arg(params.medicine_count));
+    ui->logTab->append(QString("Наценка: %1%").arg(params.markup_percent));
+
+    try {
+        configure_simulation(params);
+        init_simulation();
+    } catch (const std::exception& e) {
+        ui->logTab->append(QString("Ошибка: %1").arg(e.what()));
+        return;
+    }
+
     ui->logTab->append(QString("Партий на складе: %1").arg(warehouse.inventory.size()));
     ui->logTab->append(QString("Покупателей: %1").arg(customers.size()));
     ui->logTab->append("---");
 
-    // Переключиться на вкладку «Склад», чтобы сразу увидеть результат
+    refreshAllTabs();
     ui->tabs->setCurrentWidget(ui->stockTab);
 }
 
-void MainWindow::on_startBtn_clicked() { timer->start(); }
+void MainWindow::on_startBtn_clicked() {
+    if (day == 0) {
+        // Первый запуск — инициализация
+        on_generateBtn_clicked();
+    }
+    timer->start();
+}
+
 void MainWindow::on_pauseBtn_clicked() { timer->stop(); }
 void MainWindow::on_stepBtn_clicked()  { doStep(); }
 
@@ -94,9 +101,9 @@ void MainWindow::on_resetBtn_clicked() {
     timer->stop();
     day = 0;
     ui->lineEdit->setText("0");
-    refreshAllTabs();
     ui->logTab->clear();
     ui->logTab->append("=== Сброс ===");
+    refreshAllTabs();
 }
 
 void MainWindow::onSpeedChanged(int value) {
@@ -115,22 +122,35 @@ void MainWindow::doStep() {
     day++;
     ui->lineEdit->setText(QString::number(day));
 
-    ui->logTab->append(QString("[День %1] Начало дня").arg(day));
+    try {
+        manage_warehouse(day);
+        generate_daily_events(day);
+        process_daily_order(day);
+        cleanup_random_customers();
+    } catch (const std::exception& e) {
+        ui->logTab->append(QString("[День %1] Ошибка: %2").arg(day).arg(e.what()));
+        return;
+    }
 
-    // TODO: тут будут вызовы simulation_step(day)
-    // Пока — заглушка с наблюдаемыми событиями:
-    int expired = 0;
-    for (const auto& b : warehouse.inventory)
-        if (b.expiration_day < day) expired++;
-    if (expired > 0)
-        ui->logTab->append(QString("  списано просроченных партий: %1").arg(expired));
-
-    ui->logTab->append(QString("  всего партий на складе: %1")
-                           .arg(warehouse.inventory.size()));
+    const auto& r = simulation_result();
+    if (!r.days.empty()) {
+        const auto& d = r.days.back();
+        ui->logTab->append(QString("[День %1] заказов: %2, доставлено: %3, "
+                                   "заявок создано: %1, прибыло: %4")
+                               .arg(day)
+                               .arg(d.received_orders)
+                               .arg(d.delivered_orders)
+                               .arg(d.created_supplies)
+                               .arg(d.arrived_supplies));
+    }
 
     refreshAllTabs();
 }
 
 void MainWindow::refreshAllTabs() {
     ui->stockTab->refresh();
+    // следующие вкладки подключим отдельно:
+    // ui->ordersTab->refresh();
+    // ui->couriersTab->refresh();
+    // ui->requestsTab->refresh();
 }

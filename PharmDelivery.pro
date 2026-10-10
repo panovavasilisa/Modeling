@@ -8,10 +8,6 @@ INCLUDEPATH += $$PWD $$PWD/back
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
 
 SOURCES += \
-        back/customer.cpp \
-        back/data.cpp \
-        back/medicine.cpp \
-        back/request.cpp \
         order.cpp \
         statistics.cpp \
         store.cpp \
