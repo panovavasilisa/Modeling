@@ -2,6 +2,8 @@ QT += core gui widgets
 
 CONFIG += c++17
 
+INCLUDEPATH += $$PWD $$PWD/back
+
 # You can make your code fail to compile if it uses deprecated APIs.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
 
@@ -22,10 +24,14 @@ SOURCES += \
         front/widgets/stockbar.cpp \
         main.cpp \
         mainwindow.cpp \
+        data_generator.cpp \
+        internal/model_support.cpp \
+        internal/supply_manager.cpp
 
 HEADERS += \
     back/customer.h \
     back/data.h \
+    back/data_generator.h \
     back/medicine.h \
     back/order.h \
     back/request.h \
@@ -38,7 +44,9 @@ HEADERS += \
     front/stocktab.h \
     front/widgets/loadring.h \
     front/widgets/stockbar.h \
-    mainwindow.h
+    mainwindow.h \
+    internal/model_support.h \
+    internal/supply_manager.h
 
 FORMS += \
     mainwindow.ui
