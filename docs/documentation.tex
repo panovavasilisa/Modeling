@@ -1,0 +1,107 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T2A]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else
+  \usepackage{fontspec}
+  \setmainfont{Noto Serif}
+  \setsansfont{Noto Sans}
+  \setmonofont{Noto Sans Mono}[Scale=MatchLowercase]
+\fi
+\usepackage[english,russian]{babel}
+\usepackage[a4paper,margin=22mm,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{array,booktabs,longtable,tabularx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage[expansion=false]{microtype}
+\usepackage{xurl}
+\usepackage[unicode,hidelinks]{hyperref}
+
+\definecolor{accent}{HTML}{25597A}
+\definecolor{codebg}{HTML}{F3F5F7}
+\definecolor{codecomment}{HTML}{426447}
+\hypersetup{
+  pdftitle={PharmDelivery: документация проекта},
+  pdfsubject={Архитектура и использование имитационной модели доставки лекарств},
+  pdfkeywords={PharmDelivery, C++17, Qt, имитационная модель, склад}
+}
+\urlstyle{tt}
+\DeclareRobustCommand{\code}[1]{\expandafter\nolinkurl\expandafter{\detokenize{#1}}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\setlist{itemsep=2pt,topsep=4pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily PharmDelivery}
+\fancyhead[R]{\small\sffamily Документация проекта}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  keywordstyle=\color{accent}\bfseries,
+  commentstyle=\color{codecomment},
+  stringstyle=\color{accent},
+  frame=single,
+  rulecolor=\color{black!15},
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=5pt,
+  xrightmargin=5pt,
+  aboveskip=8pt,
+  belowskip=8pt
+}
+
+\begin{document}
+\begin{titlepage}
+  \centering
+  \vspace*{25mm}
+  {\Huge\sffamily\bfseries\color{accent} PharmDelivery\par}
+  \vspace{8mm}
+  {\LARGE Документация проекта\par}
+  \vspace{6mm}
+  {\large Имитационная модель службы доставки лекарств\par}
+  \vspace{18mm}
+  \begin{tabular}{ll}
+    Язык реализации: & C++17 \\
+    Среда приложения: & Qt Core, Gui, Widgets \\
+    Шаг моделирования: & один день \\
+    Интерфейсы: & командная строка и функции C++ \\
+    Форматы данных: & CSV и JSON \\
+    Дата документации: & 10 октября 2026 года
+  \end{tabular}
+  \vfill
+  \begin{minipage}{0.9\textwidth}
+    Документ описывает реализацию модели в этой версии проекта.
+    Источниками сведений служат публичные заголовки, реализации модели,
+    обработчик командной строки
+    и существующие тесты. Примеры денежных сумм иллюстрируют правила расчёта
+    и не являются результатами случайного эксперимента.
+  \end{minipage}
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+\input{sections/01-overview}
+\input{sections/02-running}
+\input{sections/03-architecture}
+\input{sections/04-model}
+\input{sections/05-api}
+\input{sections/06-formats}
+\input{sections/07-testing}
+\end{document}

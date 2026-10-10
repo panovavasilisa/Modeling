@@ -1,37 +1,36 @@
 #include <QApplication>
-
-#include "back/customer.h"
-#include "back/data.h"
-#include "back/medicine.h"
-#include "back/order.h"
-#include "back/request.h"
-#include "back/statistics.h"
-#include "back/store.h"
-#include "back/data_generator.h"
-
-// инициализация ввод N M K наценки создание постоянных клиентов и начального запаса склада
-void init_simulation();
-
-//генерация заказов на сегодня добавление разовых клиентов в массив и проверка расписания постоянных
-void generate_daily_events(int current_day);
-
-// выполнение заказов курьеры развозят товары склад списывает проданное обновляеться статистика
-void process_daily_order(int current_day); 
-
-// работа со складом проверка сроков годности и если нужно дозакупка
-void manage_warehouse(int current_day);
-
-// удаление не постоянных клиентов из масива коиентов (в конце дня)
-void cleanup_random_customers();
-
-// вывод финального отчета
-void print_final_statistics();
-
+#include "back/simulation.h"
+#include "internal/simulation_cli.h"
+#include <iostream>
+#include <exception>
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-
-
-    return a.exec();
+    try {
+        const auto options = model_detail::parse_command_line(argc, argv);
+        if (options.help) {
+            model_detail::print_help(std::cout);
+            return 0;
+        }
+        // Консольный эксперимент запускается без доступа к графической сессии,
+        // даже если переменные окружения экрана унаследованы от рабочего стола.
+        if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM")) qputenv("QT_QPA_PLATFORM", "offscreen");
+        QApplication a(argc, argv);
+        configure_simulation(options.parameters);
+        init_simulation();
+        if (!options.quiet) model_detail::print_catalog(std::cout);
+        for (int day = 1; day <= options.parameters.days; ++day) {
+            manage_warehouse(day);
+            generate_daily_events(day);
+            process_daily_order(day);
+            cleanup_random_customers();
+            if (!options.quiet) model_detail::print_daily_report(std::cout, simulation_result(), options.show_orders);
+        }
+        print_final_statistics();
+        if (!options.report_file.empty()) model_detail::write_json_report(options.report_file);
+        return 0;
+    } catch (const std::exception& error) {
+        std::cerr << "Ошибка: " << error.what() << '\n';
+        return 1;
+    }
 }

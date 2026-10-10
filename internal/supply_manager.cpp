@@ -63,4 +63,4 @@ int SupplyManager::advance_to(int current_day) {
     return arrived;
 }
 
-} // namespace model_detail
+} // пространство имён model_detail

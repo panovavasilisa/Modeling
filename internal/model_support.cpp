@@ -48,14 +48,15 @@ void validate_medicine_id(int id) {
 void validate_batch(const StoreBatch& batch) {
     validate_medicine_id(batch.mas_med_id);
     if (batch.count < 0 || batch.expiration_day < 0 ||
-        !std::isfinite(batch.batch_price) || batch.batch_price < 0.0)
+        !std::isfinite(batch.batch_price) || batch.batch_price < 0.0 ||
+        !std::isfinite(batch.count * batch.batch_price))
         throw std::invalid_argument("Invalid warehouse batch");
 }
 
 WarehouseAccounting& ModelContext::accounting(Warehouse& warehouse) {
     auto& result = warehouses[&warehouse];
-    // Match by values, never by vector element addresses. Counts can change
-    // through StoreBatch::take without invalidating a batch's cost basis.
+    // Сопоставляем партии по значениям, а не по адресам элементов вектора.
+    // Изменение количества через StoreBatch::take не меняет закупочную цену партии.
     std::vector<BatchAccounting> next;
     next.reserve(warehouse.inventory.size());
     std::vector<bool> used(result.batches.size(), false);
@@ -114,4 +115,4 @@ int random_int(int low, int high) {
     return std::uniform_int_distribution<int>(low, high)(context().random);
 }
 
-} // namespace model_detail
+} // пространство имён model_detail

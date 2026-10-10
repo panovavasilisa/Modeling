@@ -65,6 +65,7 @@ void batches_and_orders() {
     rejects([&] { invalid.process_order(warehouse, duplicate_stats, 0); }, "invalid medicine");
     close(duplicate_stats.income, 400, "failed order cannot change income");
     rejects([&] { warehouse.add_batch({0,-1,50,100}); }, "invalid batch");
+    rejects([&] { warehouse.add_batch({0,10,50,1e308}); }, "reject overflowing batch value");
 }
 void discounts() {
     struct Scenario { bool card; bool regular; int count; double markup; double expected; };
@@ -98,7 +99,7 @@ void discounts() {
 }
 void expiration_and_restock() {
     reset();
-    // A custom batch price must also be discounted exactly once.
+    // Партия с пользовательской ценой тоже должна уценяться только один раз.
     warehouse.add_batch({0, 4, 40, 250});
     warehouse.write_off(9);
     close(warehouse.inventory[0].batch_price, 250, "no early markdown");
@@ -107,7 +108,7 @@ void expiration_and_restock() {
     warehouse.write_off(11);
     warehouse.write_off(11);
     close(warehouse.inventory[0].batch_price, 125, "no repeated markdown");
-    // Reallocation and equal medication indices do not lose markdown state.
+    // Перераспределение памяти вектора и одинаковые индексы лекарств сохраняют признак уценки.
     warehouse.add_batch({0, 3, 60, 100});
     warehouse.write_off(40);
     check(warehouse.inventory.size() == 2, "valid through expiration day");

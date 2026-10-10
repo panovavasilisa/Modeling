@@ -1,0 +1,101 @@
+\section{Архитектура и исходные файлы}
+\label{sec:architecture}
+
+\subsection{Организация модулей}
+Публичные сущности предметной области объявлены в \code{back/}. Их реализации
+расположены в корне проекта. Координация эксперимента, учёт закупочных цен,
+поставки и консольное представление вынесены в \code{internal/} и пространство
+имён \code{model_detail}. Публичные функции из \code{back/simulation.h}
+делегируют работу единственному \code{SimulationEngine}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  node distance=7mm,
+  box/.style={draw=accent,rounded corners=2pt,fill=accent!5,
+              align=center,text width=43mm,minimum height=12mm,font=\small},
+  arrow/.style={-{Latex[length=2mm]},draw=accent,thick}
+]
+\node[box] (entry) {\texttt{main.cpp}\\Командная строка и запуск};
+\node[box,below=of entry] (public) {\texttt{back/simulation.h}\\Публичный контракт};
+\node[box,below=of public] (engine) {\texttt{SimulationEngine}\\Фазы дня, очередь, результаты};
+\node[box,below left=9mm and 5mm of engine] (domain) {\texttt{Warehouse}, \texttt{Order}\\Товар, выдача и цена};
+\node[box,below right=9mm and 5mm of engine] (supply) {\texttt{SupplyManager}\\Заявки и поступления};
+\node[box,below=28mm of engine] (context) {\texttt{ModelContext}\\Генератор, скидки, учёт партий};
+\draw[arrow] (entry) -- (public);
+\draw[arrow] (public) -- (engine);
+\draw[arrow] (engine) -- (domain);
+\draw[arrow] (engine) -- (supply);
+\draw[arrow] (domain) -- (context);
+\draw[arrow] (supply) -- (context);
+\end{tikzpicture}
+\caption{Основные связи модулей. Генерация данных и сериализация описаны в тексте.}
+\end{figure}
+
+\code{DataGenerator} использует случайный генератор из \code{ModelContext}
+и текущий склад. \code{simulation_cli.cpp} читает параметры, представляет
+каталог и результаты в консоли и записывает JSON. Его форматирование отделено
+от правил работы склада и заказов.
+
+\subsection{Карта файлов}
+{\small
+\begin{longtable}{@{}L{0.38\textwidth}L{0.55\textwidth}@{}}
+\toprule
+Файл или каталог & Назначение \\
+\midrule
+\endhead
+\code{PharmDelivery.pro} & Список исходников, заголовков и параметры qmake. \\
+\code{main.cpp} & Разбор аргументов, создание \code{QApplication}, дневной цикл,
+итоговый вывод и обработка исключений. \\
+\code{back/simulation.h} & Параметры эксперимента, структуры результатов,
+публичные функции управления моделью. \\
+\code{back/data.h} & Глобальные склад, каталог, покупатели и параметры $N,M,K$. \\
+\code{back/medicine.h}, \code{back/customer.h} & Поля лекарства и покупателя. \\
+\code{back/store.h}, \code{store.cpp} & Партия, склад, уценка, списание,
+проверка необходимости пополнения. \\
+\code{back/order.h}, \code{order.cpp} & Запрос покупателя, подбор партий,
+фактическая выдача и расчёт стоимости. \\
+\code{back/request.h} & Заявка поставщику. \\
+\code{back/statistics.h}, \code{statistics.cpp} & Накопление выручки,
+закупочных расходов и потерь. \\
+\code{back/data_generator.h}, \code{data_generator.cpp} & Каталог,
+покупатели, состав заказов и задержки поставок. \\
+\code{internal/model_support.*} & Генератор, политика скидок, проверки
+входных данных и дополнительные сведения о партиях. \\
+\code{internal/supply_manager.*} & Очередь поставок и история поступлений. \\
+\code{internal/simulation_engine.*} & Состояние эксперимента, порядок фаз,
+очередь заказов, распределение доставок и баланс. \\
+\code{internal/simulation_cli.*} & Аргументы, справка, консольные и JSON-отчёты. \\
+\code{customer.cpp}, \code{medicine.cpp}, \code{request.cpp}, \code{data.cpp}
+& В текущей версии пусты; соответствующие поля и inline-глобальные переменные
+объявлены в заголовках. \\
+\code{examples/initial-stock.csv} & Пример начальных партий для 15 лекарств. \\
+\code{tests/} & Модульные, интеграционные и консольные проверки. \\
+\code{docs/} & Исходники этой документации и инструкция её сборки. \\
+\bottomrule
+\end{longtable}
+}
+
+\subsection{Состояние и владение данными}
+\code{back/data.h} содержит inline-переменные \code{warehouse},
+\code{mas_med}, \code{type_med}, \code{group_med}, \code{customers},
+\code{N}, \code{M}, \code{K} и \code{global_marcup}.
+Написание \code{global_marcup} соответствует существующему контракту.
+
+\code{SimulationEngine} владеет очередью \code{orders_}, списком подготовленных
+покупок \code{tomorrow_}, статистикой и результатом. Внутренний \code{QueuedOrder}
+хранит идентификатор, исходный день заказа и \code{Order}. Подготовленная покупка
+содержит копию данных покупателя, запрошенные и реально выданные позиции,
+цену и закупочную стоимость.
+
+\code{ModelContext} хранит единый \code{std::mt19937}, текущий день,
+задержку доставки, настройки скидок и дополнительный учёт складов по их адресам.
+\code{WarehouseAccounting} содержит закупочные цены партий, признаки уценки,
+стоимость и количество выделенных упаковок, а также потери от списания.
+Это позволяет сохранить исходные поля \code{StoreBatch} без добавления
+отдельного поля закупочной цены.
+
+Пары сведений о партии сопоставляются по лекарству, сроку годности и продажной
+базе. При интеграции следует использовать методы модели: произвольная замена
+элементов \code{inventory} или изменение их цен может нарушить соответствие
+между публичным складом и внутренним учётом.

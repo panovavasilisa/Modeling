@@ -14,3 +14,10 @@ fi
     "$project_root/internal/supply_manager.cpp" \
     -o "$test_build/core_tests"
 "$test_build/core_tests"
+"${CXX:-g++}" "${test_flags[@]}" -I"$project_root" -I"$project_root/back" \
+    "$project_root/tests/simulation_tests.cpp" "$project_root/store.cpp" \
+    "$project_root/order.cpp" "$project_root/statistics.cpp" \
+    "$project_root/data_generator.cpp" "$project_root/internal/model_support.cpp" \
+    "$project_root/internal/supply_manager.cpp" "$project_root/internal/simulation_engine.cpp" \
+    "$project_root/internal/simulation_cli.cpp" -o "$test_build/simulation_tests"
+"$test_build/simulation_tests" "$test_build"

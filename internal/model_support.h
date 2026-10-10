@@ -8,7 +8,7 @@
 #include "back/customer.h"
 #include "back/store.h"
 
-// Implementation state; the original backend headers remain unchanged.
+// Внутреннее состояние реализации; объявления исходных классов сохраняются.
 namespace model_detail {
 
 struct DiscountPolicy {
@@ -60,4 +60,4 @@ void validate_medicine_id(int id);
 void validate_batch(const StoreBatch& batch);
 int random_int(int low, int high);
 
-} // namespace model_detail
+} // пространство имён model_detail
