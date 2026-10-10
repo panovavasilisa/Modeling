@@ -37,4 +37,4 @@ private:
     std::vector<SupplyReceipt> receipts_;
 };
 
-} // namespace model_detail
+} // пространство имён model_detail

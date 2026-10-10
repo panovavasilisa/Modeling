@@ -1,9 +1,11 @@
-# Qt Creator
+# Настройки Qt Creator
 .qtcreator/
 *.pro.user
 *.pro.user.*
 
 # Сборка
+a.out
+build/
 build-*/
 Makefile
 Makefile.*

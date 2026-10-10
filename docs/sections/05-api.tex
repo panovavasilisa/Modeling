@@ -1,0 +1,218 @@
+\section{Программный интерфейс C++}
+\label{sec:api}
+
+\subsection{Публичные функции управления}
+Основной заголовок подключения --- \code{back/simulation.h}.
+\begin{lstlisting}[language=C++]
+void configure_simulation(const SimulationParameters& parameters);
+const SimulationParameters& simulation_parameters();
+const SimulationResult& simulation_result();
+void init_simulation();
+void manage_warehouse(int current_day);
+void generate_daily_events(int current_day);
+void process_daily_order(int current_day);
+void cleanup_random_customers();
+void print_final_statistics();
+\end{lstlisting}
+
+\begin{tabularx}{\textwidth}{@{}L{0.39\textwidth}Y@{}}
+\toprule
+Функция & Контракт \\
+\midrule
+\code{configure_simulation} & Проверяет и сохраняет параметры. Допустима
+до инициализации или после завершения дня; внутри дня запрещена.
+Для запуска с новыми параметрами затем нужна инициализация. \\
+\code{simulation_parameters} & Возвращает константную ссылку на текущие параметры. \\
+\code{init_simulation} & Создаёт начальное состояние и сбрасывает результаты,
+очереди и статистику эксперимента. \\
+\code{manage_warehouse} & Начинает следующий день: склад, потери, поставки. \\
+\code{generate_daily_events} & Создаёт заказы текущего начатого дня. \\
+\code{process_daily_order} & Доставляет вчерашнее, готовит завтрашнее,
+формирует пополнение. \\
+\code{cleanup_random_customers} & Завершает день, обновляет покупателей
+и добавляет дневной результат. \\
+\code{simulation_result} & Возвращает константную ссылку на результат;
+актуальный снимок готов после завершения дня. \\
+\code{print_final_statistics} & Выводит накопленную итоговую статистику
+в \code{std::cout}. \\
+\bottomrule
+\end{tabularx}
+
+Возвращаемые ссылки относятся к единственному экземпляру движка.
+Чтобы сохранить результаты независимо от следующих дней или нового запуска,
+скопируйте \code{SimulationResult}. Все вызовы для одного эксперимента должны
+выполняться последовательно. Публичная функция \code{init_simulation()}
+сбрасывает модель; не используйте её как шаг продолжения текущего дня.
+
+\subsection{Пример подключения модели}
+Минимальный пример потребителя, выполняющего все дни без Qt-точки входа:
+\begin{lstlisting}[language=C++]
+#include "back/simulation.h"
+#include <exception>
+#include <iostream>
+
+int main() {
+    try {
+        SimulationParameters p;
+        p.days = 10;
+        p.couriers = 5;
+        p.medicine_count = 15;
+        p.markup_percent = 25.0;
+        p.seed = 42;
+
+        configure_simulation(p);
+        init_simulation();
+        for (int day = 1; day <= p.days; ++day) {
+            manage_warehouse(day);
+            generate_daily_events(day);
+            process_daily_order(day);
+            cleanup_random_customers();
+            const auto& current = simulation_result().days.back();
+            std::cout << current.day << ' '
+                      << current.delivered_orders << '\n';
+        }
+        SimulationResult saved = simulation_result();
+        std::cout << saved.profit << '\n';
+        return 0;
+    } catch (const std::exception& error) {
+        std::cerr << error.what() << '\n';
+        return 1;
+    }
+}
+\end{lstlisting}
+В приложении с графическим интерфейсом тот же порядок можно выполнять
+по пользовательской команде или таймеру. Обновляйте представление после
+\code{cleanup_random_customers()}. При отдельной сборке потребителя подключите
+реализации склада, заказа, статистики, генератора, контекста, поставок и движка;
+\code{main.cpp} консольного приложения в такую сборку не включается.
+
+\subsection{Параметры и сущности}
+\code{SimulationParameters} содержит поля \code{days}, \code{couriers},
+\code{medicine_count}, \code{markup_percent}, \code{card_discount},
+\code{large_purchase_discount}, \code{regular_discount},
+\code{maximum_discount}, \code{initial_count}, \code{regular_customers},
+\code{seed} и \code{initial_stock_file}. Значения по умолчанию и ограничения
+приведены в разделе~\ref{sec:running}; \code{validate()} проверяет их
+без запуска эксперимента. Соответствие имён CLI и полей:
+\code{--bulk-discount} задаёт \code{large_purchase_discount},
+\code{--stock} задаёт \code{initial_stock_file}.
+
+{\small
+\begin{longtable}{@{}L{0.21\textwidth}L{0.72\textwidth}@{}}
+\toprule
+Сущность & Поля и смысл \\
+\midrule
+\endhead
+\code{Medicine} & \code{dosage}, \code{type_med_id}, \code{group_med_id},
+\code{wholesale_price}, \code{shelf_life}, \code{min_stock}:
+дозировка, индексы формы и группы, закупочная цена, срок годности и порог пополнения. \\
+\code{Customer} & \code{fio}, \code{phone}, \code{address};
+\code{has_card}, \code{is_regular}, \code{card_number};
+\code{regular_purchases}, \code{periodicity}, \code{next_purchase_day}.
+В \code{regular_purchases} хранятся пары «индекс лекарства, количество». \\
+\code{StoreBatch} & \code{mas_med_id}, \code{count}, \code{expiration_day},
+\code{batch_price}: лекарство, текущий остаток, последний день годности и
+текущая продажная база за упаковку. Закупочная цена хранится отдельно. \\
+\code{Warehouse} & \code{inventory}: вектор партий. Количество одного лекарства
+получается суммированием нескольких партий. \\
+\code{Order} & \code{customer_idx}, \code{items}, \code{final_price}:
+индекс покупателя, исходный запрос и рассчитанная цена фактической выдачи. \\
+\code{Request} & \code{mas_med_id}, \code{count}, \code{delivery_timer}:
+лекарство, количество и оставшееся время поставки. \\
+\code{Statistics} & \code{income}, \code{purchase_expenses},
+\code{write_off_losses}: накопленные выручка, закупки и потери. \\
+\bottomrule
+\end{longtable}
+}
+
+Публичные числовые поля исходных классов не имеют значений по умолчанию.
+При самостоятельном создании используйте инициализацию через фигурные скобки,
+например \code{Customer customer{};} и \code{Statistics stats{};}.
+Индекс лекарства должен соответствовать текущему \code{mas_med};
+индекс клиента --- текущему \code{customers}.
+
+\subsection{Методы предметных классов}
+\begin{description}
+  \item[\code{StoreBatch::price()}] Возвращает \code{count * batch_price},
+  то есть стоимость остатка по текущей базе. Проверяет неотрицательность
+  количества и цены, конечность результата.
+  \item[\code{StoreBatch::take(int cnt)}] Уменьшает остаток на
+  \code{min(cnt, count)} и возвращает реально взятое. Отрицательные
+  количества отклоняются.
+  \item[\code{Warehouse::add_batch(const StoreBatch&)}] Проверяет идентификатор,
+  количество, срок и цену; добавляет партию и её закупочные сведения.
+  Метод не начисляет расходы: этим занимается вызывающая логика поставки
+  или инициализации.
+  \item[\code{Warehouse::write_off(int day)}] Удаляет истёкшие и пустые партии,
+  применяет однократную уценку. Потери сохраняются во внутреннем контексте;
+  сбор и перенос потерь в итоговую статистику выполняет движок.
+  \item[\code{Warehouse::need_restock()}] Проверяет, существует ли хотя бы
+  одно лекарство с суммой действительных остатков ниже \code{min_stock}.
+  Сам по себе метод не создаёт заявок.
+  \item[\code{Order::process_order(Warehouse&, Statistics&, double)}]
+  Проверяет запрос, рассчитывает выдачу и цену, снимает упаковки, обновляет
+  переданную статистику и внутренний учёт. Возвращает \code{true}, если
+  выдана хотя бы одна упаковка; полнота запроса этим значением не гарантируется.
+  \item[\code{Statistics::update(double, double, double)}] Прибавляет выручку,
+  закупки и потери; проверяет конечность, неотрицательность исходных и новых сумм.
+\end{description}
+
+Низкоуровневый \code{Order::process_order} сразу добавляет цену в переданную
+статистику. Движок вызывает его с временной \code{Statistics reserved_sale{}},
+чтобы итоговую выручку начислить только при доставке на следующий день.
+При прямом вызове дата и допустимый срок доставки берутся из
+\code{ModelContext}; стандартный дневной контракт устанавливает их сам.
+
+Внутреннее \code{last_fulfillment} содержит фактическую выдачу только
+последней обработки и заменяется следующей. Для внешнего потребителя
+устойчивым источником истории служат \code{CompletedPurchase}.
+
+\subsection{Выполненная покупка}
+\code{CompletedPurchase} содержит:
+\begin{itemize}
+  \item \code{order_id}: последовательный идентификатор с 1, сбрасывается
+        при новом эксперименте;
+  \item \code{ordered_day}, \code{prepared_day}, \code{delivered_day}:
+        день получения, выделения и доставки;
+  \item \code{courier_index}: индекс назначенного курьера;
+  \item \code{customer}: копию всех полей \code{Customer};
+  \item \code{requested}, \code{supplied}: векторы пар «лекарство, упаковки»;
+  \item \code{price}: окончательную цену;
+        \code{acquisition_cost}: закупочную стоимость выданных упаковок.
+\end{itemize}
+
+\subsection{Результат дня и всего эксперимента}
+\code{DailySimulationResult} хранит \code{day}, \code{received_orders},
+\code{planned_orders}, \code{empty_orders}, \code{prepared_orders},
+\code{delivered_orders}, \code{late_deliveries}, \code{arrived_supplies},
+\code{created_supplies}, \code{pending_orders},
+\code{courier_limits_satisfied}, \code{courier_load},
+\code{available_packages} и накопленную \code{totals}.
+Счётчик \code{planned_orders} входит в \code{received_orders}.
+Размеры массивов нагрузки и остатков равны $M$ и $K$ соответственно.
+
+\code{SimulationResult} содержит \code{totals}, \code{profit},
+\code{available_stock_cost}, \code{reserved_stock_cost},
+\code{delivered_stock_cost}, \code{initial_packages},
+\code{supplied_packages}, \code{written_off_packages},
+\code{pending_deliveries}, \code{pending_orders}, \code{pending_supplies},
+\code{days} и \code{completed_orders}. Различайте:
+\begin{itemize}
+  \item \code{pending_orders}: запросы в очереди, ещё без выделенного товара;
+  \item \code{pending_deliveries}: уже подготовленные покупки на следующий день;
+  \item \code{pending_supplies}: ожидающие заявки поставщикам.
+\end{itemize}
+Полный смысл сериализованных полей приведён в разделе~\ref{sec:formats}.
+
+\subsection{Исключения и восстановление}
+\code{std::invalid_argument} сигнализирует о недопустимых параметрах и полях,
+\code{std::logic_error} --- о нарушении последовательности или внутренних
+инвариантов, \code{std::overflow_error} --- о числовом переполнении.
+Файловые ошибки обычно представлены \code{std::runtime_error}; разбор
+стандартными \code{stoll}, \code{stod} и \code{stoull} также может выдавать
+\code{std::out_of_range}.
+
+Интерфейс не гарантирует откат целого дня при исключении. Если шаг завершился
+ошибкой, восстановите корректные параметры и начните новый эксперимент
+через инициализацию; продолжать частично выполненную фазу нельзя считать
+поддерживаемым способом восстановления.

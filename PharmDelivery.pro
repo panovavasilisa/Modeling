@@ -11,10 +11,14 @@ SOURCES += \
         back/customer.cpp \
         back/data.cpp \
         back/medicine.cpp \
-        order.cpp \
         back/request.cpp \
+        order.cpp \
         statistics.cpp \
         store.cpp \
+        data_generator.cpp \
+        internal/model_support.cpp \
+        internal/supply_manager.cpp \
+        internal/simulation_engine.cpp \
         front/courierstab.cpp \
         front/logtab.cpp \
         front/orderstab.cpp \
@@ -23,10 +27,7 @@ SOURCES += \
         front/widgets/loadring.cpp \
         front/widgets/stockbar.cpp \
         main.cpp \
-        mainwindow.cpp \
-        data_generator.cpp \
-        internal/model_support.cpp \
-        internal/supply_manager.cpp \
+        mainwindow.cpp
 
 HEADERS += \
     back/customer.h \
@@ -37,6 +38,10 @@ HEADERS += \
     back/request.h \
     back/statistics.h \
     back/store.h \
+    back/simulation.h \
+    internal/model_support.h \
+    internal/supply_manager.h \
+    internal/simulation_engine.h \
     front/courierstab.h \
     front/logtab.h \
     front/orderstab.h \
@@ -44,9 +49,7 @@ HEADERS += \
     front/stocktab.h \
     front/widgets/loadring.h \
     front/widgets/stockbar.h \
-    mainwindow.h \
-    internal/model_support.h \
-    internal/supply_manager.h
+    mainwindow.h
 
 FORMS += \
     mainwindow.ui

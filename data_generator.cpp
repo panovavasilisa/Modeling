@@ -67,7 +67,7 @@ void DataGenerator::generate_random_customers() {
 bool DataGenerator::should_generate_order(double markup_percent) {
     if (!std::isfinite(markup_percent) || markup_percent < 0.0)
         throw std::invalid_argument("Invalid retail markup");
-    // Independent arrival opportunities approximate a binomial daily stream.
+    // Независимые попытки поступления заказа формируют биномиальный поток за день.
     const double probability = 0.75 * std::exp(-markup_percent / 60.0);
     return std::bernoulli_distribution(probability)(model_detail::context().random);
 }

@@ -54,7 +54,7 @@ bool Order::process_order(Warehouse& warehouse, Statistics& stats, double markup
     for (auto count : supplied)
         if (count > std::numeric_limits<int>::max())
             throw std::overflow_error("Fulfilled quantity overflow");
-    // Validate and compute the entire fulfillment before changing stocks.
+    // Сначала проверяем весь заказ и рассчитываем выдачу, затем изменяем остатки.
     stats.update(total, 0.0, 0.0);
     for (std::size_t i = 0; i < reserved.size(); ++i)
         warehouse.inventory[i].take(reserved[i]);
