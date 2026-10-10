@@ -76,9 +76,6 @@
       <property name="acceptDrops">
        <bool>false</bool>
       </property>
-      <property name="accessibleName">
-       <string notr="true"/>
-      </property>
       <property name="currentIndex">
        <number>0</number>
       </property>
@@ -531,7 +528,7 @@
         </widget>
        </widget>
       </widget>
-      <widget class="QWidget" name="stockTab">
+      <widget class="StockTab" name="stockTab">
        <attribute name="title">
         <string>Склад</string>
        </attribute>
@@ -566,6 +563,13 @@
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>StockTab</class>
+   <extends>QWidget</extends>
+   <header>front/stocktab.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
