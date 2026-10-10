@@ -1,10 +1,17 @@
-#ifndef STOCKTAB_H
-#define STOCKTAB_H
+#pragma once
+#include <QWidget>
+#include <QTableView>
+#include <QStandardItemModel>
 
-class stocktab
-{
+class StockTab : public QWidget {
+    Q_OBJECT
 public:
-    stocktab();
-};
+    explicit StockTab(QWidget* parent = nullptr);
 
-#endif // STOCKTAB_H
+public slots:
+    void refresh();
+
+private:
+    QTableView* table;
+    QStandardItemModel* model;
+};

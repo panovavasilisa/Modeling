@@ -13,8 +13,6 @@ SOURCES += \
         back/request.cpp \
         back/statistics.cpp \
         back/store.cpp \
-        customer.cpp \
-        data.cpp \
         front/courierstab.cpp \
         front/logtab.cpp \
         front/orderstab.cpp \
@@ -24,11 +22,6 @@ SOURCES += \
         front/widgets/stockbar.cpp \
         main.cpp \
         mainwindow.cpp \
-        medicine.cpp \
-        order.cpp \
-        request.cpp \
-        statistics.cpp \
-        store.cpp
 
 HEADERS += \
     back/customer.h \
