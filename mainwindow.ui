@@ -77,7 +77,7 @@
        <bool>false</bool>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>6</number>
       </property>
       <widget class="QWidget" name="paramsTab">
        <attribute name="title">
@@ -553,7 +553,7 @@
         <string>Результаты</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="logTab">
+      <widget class="LogTab" name="logTab">
        <attribute name="title">
         <string>Журнал</string>
        </attribute>
@@ -568,6 +568,11 @@
    <class>StockTab</class>
    <extends>QWidget</extends>
    <header>front/stocktab.h</header>
+  </customwidget>
+  <customwidget>
+   <class>LogTab</class>
+   <extends>QWidget</extends>
+   <header>front/logtab.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -29,6 +29,7 @@
 #include <QtWidgets/QTableView>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include "front/logtab.h"
 #include "front/stocktab.h"
 
 QT_BEGIN_NAMESPACE
@@ -113,7 +114,7 @@ public:
     QWidget *couriersTab;
     QWidget *requestsTab;
     QWidget *resultsTab;
-    QWidget *logTab;
+    LogTab *logTab;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -442,7 +443,7 @@ public:
         resultsTab = new QWidget();
         resultsTab->setObjectName("resultsTab");
         tabs->addTab(resultsTab, QString());
-        logTab = new QWidget();
+        logTab = new LogTab();
         logTab->setObjectName("logTab");
         tabs->addTab(logTab, QString());
 
@@ -452,7 +453,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        tabs->setCurrentIndex(0);
+        tabs->setCurrentIndex(6);
 
 
         QMetaObject::connectSlotsByName(MainWindow);

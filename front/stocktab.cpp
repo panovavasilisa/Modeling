@@ -8,35 +8,55 @@
 
 StockTab::StockTab(QWidget* parent) : QWidget(parent) {
     auto* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 0, 0);
+
     table = new QTableView(this);
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    table->setAlternatingRowColors(true);
+
     model = new QStandardItemModel(this);
     model->setHorizontalHeaderLabels({
-        "Лекарство", "Дозировка", "Кол-во",
-        "Истекает (день)", "Цена за ед."
+        "ID", "Вид", "Группа", "Дозировка, мг",
+        "Кол-во", "Истекает (день)", "Цена партии", "Опт. цена"
     });
+
     table->setModel(model);
     table->horizontalHeader()->setStretchLastSection(true);
+
     layout->addWidget(table);
 }
 
 void StockTab::refresh() {
     model->removeRows(0, model->rowCount());
+
     for (const auto& batch : warehouse.inventory) {
         if (batch.mas_med_id < 0 ||
-            batch.mas_med_id >= (int)mas_med.size()) continue;
+            batch.mas_med_id >= static_cast<int>(mas_med.size())) continue;
 
         const Medicine& m = mas_med[batch.mas_med_id];
-        QString name = (m.type_med_id >= 0 &&
-                        m.type_med_id < (int)type_med.size())
+
+        QString type = (m.type_med_id >= 0 &&
+                        m.type_med_id < static_cast<int>(type_med.size()))
                            ? QString::fromStdString(type_med[m.type_med_id])
-                           : "?";
+                           : QString("?");
+
+        QString group = (m.group_med_id >= 0 &&
+                         m.group_med_id < static_cast<int>(group_med.size()))
+                            ? QString::fromStdString(group_med[m.group_med_id])
+                            : QString("?");
 
         QList<QStandardItem*> row;
-        row << new QStandardItem(name);
+        row << new QStandardItem(QString::number(batch.mas_med_id));
+        row << new QStandardItem(type);
+        row << new QStandardItem(group);
         row << new QStandardItem(QString::number(m.dosage));
         row << new QStandardItem(QString::number(batch.count));
         row << new QStandardItem(QString::number(batch.expiration_day));
         row << new QStandardItem(QString::number(batch.batch_price, 'f', 2));
+        row << new QStandardItem(QString::number(m.wholesale_price, 'f', 2));
         model->appendRow(row);
     }
+
+    table->resizeColumnsToContents();
 }

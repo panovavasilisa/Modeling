@@ -11,10 +11,10 @@ SOURCES += \
         back/customer.cpp \
         back/data.cpp \
         back/medicine.cpp \
-        back/order.cpp \
+        order.cpp \
         back/request.cpp \
-        back/statistics.cpp \
-        back/store.cpp \
+        statistics.cpp \
+        store.cpp \
         front/courierstab.cpp \
         front/logtab.cpp \
         front/orderstab.cpp \
@@ -26,7 +26,7 @@ SOURCES += \
         mainwindow.cpp \
         data_generator.cpp \
         internal/model_support.cpp \
-        internal/supply_manager.cpp
+        internal/supply_manager.cpp \
 
 HEADERS += \
     back/customer.h \
