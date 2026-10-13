@@ -29,6 +29,11 @@ struct SimulationParameters {
     int regular_customers = 10;
     std::uint32_t seed = 5489;
     std::string initial_stock_file;
+    int orders_per_day = 180; // Общий предел новых заказов, включая плановые.
+    double initial_capital = 1000000.0; // Начальные деньги, руб.; не входят в прибыль.
+    int restock_threshold = 20; // Минимальный остаток каждого лекарства, упаковки.
+    int markdown_days = 30; // Уценка при таком числе дней до окончания срока годности.
+    double discounted_probability = 0.75; // Вероятность выбора уценённой категории, 0..1.
     void validate() const;
 };
 
@@ -60,6 +65,7 @@ struct DailySimulationResult {
     std::vector<int> courier_load;
     std::vector<std::int64_t> available_packages;
     Statistics totals{};
+    double cash_balance = 0.0;
 };
 
 struct SimulationResult {
@@ -76,6 +82,7 @@ struct SimulationResult {
     std::vector<Request> pending_supplies;
     std::vector<DailySimulationResult> days;
     std::vector<CompletedPurchase> completed_orders;
+    double cash_balance = 0.0;
 };
 
 // Графический интерфейс может настроить модель и выполнять её по дням,

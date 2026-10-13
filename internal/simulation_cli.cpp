@@ -81,6 +81,11 @@ CommandLineOptions parse_command_line(int argc, char* argv[]) {
         else if (option == "--max-discount") p.maximum_discount = decimal(value);
         else if (option == "--initial-count") p.initial_count = integer(value);
         else if (option == "--regular-customers") p.regular_customers = integer(value);
+        else if (option == "--orders-per-day") p.orders_per_day = integer(value);
+        else if (option == "--initial-capital") p.initial_capital = decimal(value);
+        else if (option == "--restock-threshold") p.restock_threshold = integer(value);
+        else if (option == "--markdown-days") p.markdown_days = integer(value);
+        else if (option == "--discounted-probability") p.discounted_probability = decimal(value);
         else if (option == "--stock") p.initial_stock_file = value;
         else if (option == "--report") options.report_file = value;
         else if (option == "--seed") {
@@ -109,6 +114,12 @@ void print_help(std::ostream& output) {
            << "  --stock FILE                 начальные партии вместо генерации\n"
            << "                               medicine_id,count,expiration_day[,unit_price]\n"
            << "  --regular-customers C        число постоянных покупателей, 10\n"
+           << "  --orders-per-day C           предел новых заказов, включая плановые, 0–100000, 180\n"
+           << "  --initial-capital R          начальный капитал в рублях, >=0, по умолчанию 1000000\n"
+           << "  --restock-threshold C        порог пополнения в упаковках, 0–1000000, 20\n"
+           << "                               0 отключает автоматическое пополнение\n"
+           << "  --markdown-days D            дней до истечения срока для уценки, 0–1000000, 30\n"
+           << "  --discounted-probability P   вероятность выбора уценённой категории, 0–1, 0.75\n"
            << "  --seed S                     воспроизводимость эксперимента, 5489\n"
            << "  --report FILE                сохранить JSON с остатками и доставками\n"
            << "  --orders                     печатать сведения каждой доставки\n"
@@ -140,6 +151,8 @@ void print_daily_report(std::ostream& output, const SimulationResult& result, bo
     output << "Остатки: ";
     for (std::size_t i = 0; i < day.available_packages.size(); ++i) output << '#' << i << '=' << day.available_packages[i] << ' ';
     output << '\n';
+    output << "Денежный баланс: " << std::fixed << std::setprecision(2)
+           << day.cash_balance << " руб.\n";
     if (day.late_deliveries) output << "Доставлено позже следующего дня из-за очереди: " << day.late_deliveries << '\n';
     if (show_orders) for (const auto& purchase : result.completed_orders) {
         if (purchase.delivered_day != day.day) continue;
@@ -162,11 +175,15 @@ void write_json_report(const std::string& path) {
            << ",\"card_discount\":" << p.card_discount << ",\"bulk_discount\":" << p.large_purchase_discount
            << ",\"regular_discount\":" << p.regular_discount << ",\"maximum_discount\":" << p.maximum_discount
            << ",\"initial_count\":" << p.initial_count << ",\"regular_customers\":" << p.regular_customers
+           << ",\"orders_per_day\":" << p.orders_per_day << ",\"initial_capital\":" << p.initial_capital
+           << ",\"restock_threshold\":" << p.restock_threshold << ",\"markdown_days\":" << p.markdown_days
+           << ",\"discounted_probability\":" << p.discounted_probability
            << ",\"initial_stock_file\":" << quote(p.initial_stock_file) << "},\n";
     output << "\"totals\":{\"income\":" << result.totals.income
            << ",\"purchase_expenses\":" << result.totals.purchase_expenses
            << ",\"write_off_losses\":" << result.totals.write_off_losses
-           << ",\"profit\":" << result.profit << ",\"available_stock_cost\":" << result.available_stock_cost
+           << ",\"profit\":" << result.profit << ",\"cash_balance\":" << result.cash_balance
+           << ",\"available_stock_cost\":" << result.available_stock_cost
            << ",\"reserved_stock_cost\":" << result.reserved_stock_cost << ",\"delivered_stock_cost\":" << result.delivered_stock_cost
            << ",\"initial_packages\":" << result.initial_packages << ",\"supplied_packages\":" << result.supplied_packages
            << ",\"written_off_packages\":" << result.written_off_packages
@@ -189,6 +206,7 @@ void write_json_report(const std::string& path) {
                << ",\"late_deliveries\":" << day.late_deliveries << ",\"pending_orders\":" << day.pending_orders
                << ",\"arrived_supplies\":" << day.arrived_supplies << ",\"created_supplies\":" << day.created_supplies
                << ",\"income\":" << day.totals.income << ",\"purchase_expenses\":" << day.totals.purchase_expenses
+               << ",\"cash_balance\":" << day.cash_balance
                << ",\"write_off_losses\":" << day.totals.write_off_losses << ",\"courier_limits_satisfied\":"
                << (day.courier_limits_satisfied ? "true" : "false") << ",\"courier_load\":";
         numbers(output, day.courier_load);
