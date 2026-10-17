@@ -3,6 +3,7 @@
 #include "back/order.h"
 #include "internal/model_support.h"
 #include "internal/supply_manager.h"
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
@@ -183,6 +184,97 @@ void generation() {
         }
     check(discounted > 2 * ordinary, "discounted medicine higher order probability");
 }
+void configurable_generation_and_markdown() {
+    reset();
+    auto& context = model_detail::context();
+    DataGenerator generator;
+    context.restock_threshold = 37;
+    generator.generate_catalog(15);
+    for (const auto& medicine : mas_med)
+        check(medicine.min_stock == 37, "configured restock threshold reaches every medicine");
+    context.restock_threshold = 0;
+    generator.generate_catalog(15);
+    check(!warehouse.need_restock(), "zero threshold permits empty warehouse");
+
+    context.markdown_days = 5;
+    warehouse.add_batch({0, 10, 20, 100});
+    warehouse.write_off(14);
+    close(warehouse.inventory[0].batch_price, 100, "custom markdown not applied early");
+    warehouse.write_off(15);
+    close(warehouse.inventory[0].batch_price, 50, "custom markdown applies at exact boundary");
+    warehouse.write_off(16);
+    warehouse.write_off(16);
+    close(warehouse.inventory[0].batch_price, 50, "custom markdown applies only once");
+    close(context.inventory_cost(warehouse), 1000, "markdown preserves acquisition value");
+
+    reset();
+    context.markdown_days = 0;
+    warehouse.add_batch({0, 2, 20, 100});
+    warehouse.write_off(19);
+    close(warehouse.inventory[0].batch_price, 100, "zero horizon waits until expiration day");
+    warehouse.write_off(20);
+    close(warehouse.inventory[0].batch_price, 50, "zero horizon marks on expiration day");
+    warehouse.write_off(21);
+    close(context.collect_write_off(warehouse), 200, "zero horizon writeoff uses original cost");
+
+    reset();
+    generator.generate_catalog(15);
+    for (int medicine = 0; medicine < 4; ++medicine)
+        warehouse.add_batch({medicine, 100, 10, mas_med[medicine].wholesale_price});
+    warehouse.write_off(1);
+    for (double probability : {0.0, 1.0}) {
+        context.discounted_probability = probability;
+        for (int trial = 0; trial < 100; ++trial) {
+            const auto items = generator.generate_order_items();
+            std::vector<int> selected;
+            for (const auto& item : items) {
+                check((item.first < 4) == (probability == 1.0), "probability endpoint chooses requested category");
+                check(std::find(selected.begin(), selected.end(), item.first) == selected.end(), "items chosen without replacement");
+                selected.push_back(item.first);
+            }
+        }
+    }
+
+    reset();
+    generator.generate_catalog(15);
+    warehouse.add_batch({0, 100, 10, mas_med[0].wholesale_price});
+    warehouse.write_off(1);
+    context.discounted_probability = 1.0;
+    bool exhausted_category = false;
+    for (int trial = 0; trial < 100; ++trial) {
+        const auto items = generator.generate_order_items();
+        check(items.front().first == 0, "discounted category selected first at probability one");
+        exhausted_category |= items.size() > 1;
+        std::vector<int> selected{0};
+        for (std::size_t i = 1; i < items.size(); ++i) {
+            check(items[i].first != 0, "exhausted discounted group falls back to ordinary");
+            check(std::find(selected.begin(), selected.end(), items[i].first) == selected.end(), "fallback preserves unique items");
+            selected.push_back(items[i].first);
+        }
+    }
+    check(exhausted_category, "fallback exercised with multiple positions");
+    context.discounted_probability = 0.25;
+    int discounted_first = 0;
+    for (int trial = 0; trial < 2000; ++trial)
+        discounted_first += generator.generate_order_items().front().first == 0;
+    check(discounted_first > 340 && discounted_first < 660, "configured category probability independent of group size");
+
+    warehouse.inventory.clear();
+    context.discounted_probability = 1.0;
+    for (int trial = 0; trial < 20; ++trial)
+        check(!generator.generate_order_items().empty(), "no discounted stock falls back to ordinary category");
+    for (int medicine = 0; medicine < 15; ++medicine)
+        warehouse.add_batch({medicine, 100, 10, mas_med[medicine].wholesale_price});
+    warehouse.write_off(1);
+    context.discounted_probability = 0.0;
+    for (int trial = 0; trial < 20; ++trial)
+        check(!generator.generate_order_items().empty(), "all discounted stock falls back to discounted category");
+
+    context.reset(42);
+    check(context.restock_threshold == 20 && context.markdown_days == 30,
+          "context reset restores stock settings");
+    close(context.discounted_probability, 0.75, "context reset restores probability");
+}
 void financial_balance() {
     reset();
     warehouse.add_batch({0,10,30,100});
@@ -240,7 +332,8 @@ void supplier_queue() {
 
 int main() {
     try {
-        batches_and_orders(); discounts(); expiration_and_restock(); generation(); financial_balance(); supplier_queue();
+        batches_and_orders(); discounts(); expiration_and_restock(); generation();
+        configurable_generation_and_markdown(); financial_balance(); supplier_queue();
         std::cout << "Core checks passed: " << checks << '\n';
         return 0;
     } catch (const std::exception& error) {

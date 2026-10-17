@@ -57,6 +57,16 @@ make -j2
 целое от 0 до 1000000; при \code{--stock} партии берутся из файла. \\
 \code{--regular-customers} & 10 & Число постоянных покупателей,
 целое от 0 до 100000. \\
+\code{--orders-per-day} & 180 & Предел всех новых заказов за день, включая
+плановые; целое от 0 до 100000. \\
+\code{--initial-capital} & 1000000 & Начальный капитал в рублях,
+конечное число не меньше нуля. \\
+\code{--restock-threshold} & 20 & Порог пополнения каждого лекарства
+в упаковках, целое от 0 до 1000000. Ноль отключает автоматические заявки. \\
+\code{--markdown-days} & 30 & Дней до конца срока годности для начала уценки,
+целое от 0 до 1000000. \\
+\code{--discounted-probability} & 0.75 & Вероятность выбора уценённой категории
+для позиции заказа при наличии обеих категорий, от 0 до 1. \\
 \code{--seed} & 5489 & Начальное состояние генератора,
 целое от 0 до 4294967295. \\
 \code{--stock FILE} & Не задан & Файл начальных партий в формате CSV.
@@ -99,6 +109,9 @@ make -j2
 ./PharmDelivery --days 25 --couriers 7 --medicines 35 \
   --markup 20 --card-discount 4 --bulk-discount 2 \
   --regular-discount 3 --max-discount 9 \
+  --orders-per-day 60 --initial-capital 1000000 \
+  --restock-threshold 20 --markdown-days 30 \
+  --discounted-probability 0.75 \
   --seed 71 --quiet --report experiment.json
 \end{lstlisting}
 

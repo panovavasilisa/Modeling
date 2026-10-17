@@ -6,6 +6,9 @@
 
 void DataGenerator::generate_catalog(int count) {
     if (count < 15 || count > 35) throw std::invalid_argument("K must be between 15 and 35");
+    const int threshold = model_detail::context().restock_threshold;
+    if (threshold < 0 || threshold > 1000000)
+        throw std::invalid_argument("Restock threshold must be between 0 and 1000000");
     type_med = {"таблетки", "суспензия", "спрей", "мазь", "капсулы", "раствор"};
     group_med = {"сердечно-сосудистые", "антибиотики", "эндокринные", "обезболивающие", "противоаллергические"};
     mas_med.clear();
@@ -13,7 +16,7 @@ void DataGenerator::generate_catalog(int count) {
     for (int i = 0; i < count; ++i) {
         mas_med.push_back(Medicine{25 * (1 + i / 6), i % 6, i % 5,
             static_cast<double>(model_detail::random_int(50, 600)),
-            model_detail::random_int(45, 180), model_detail::random_int(10, 25)});
+            model_detail::random_int(45, 180), threshold});
     }
 }
 
@@ -67,23 +70,34 @@ void DataGenerator::generate_random_customers() {
 bool DataGenerator::should_generate_order(double markup_percent) {
     if (!std::isfinite(markup_percent) || markup_percent < 0.0)
         throw std::invalid_argument("Invalid retail markup");
-    // Независимые попытки поступления заказа формируют биномиальный поток за день.
-    const double probability = 0.75 * std::exp(-markup_percent / 60.0);
+    // При нулевой наценке используется весь заданный дневной лимит;
+    // рост наценки уменьшает вероятность обычного заказа в каждом свободном месте.
+    const double probability = std::exp(-markup_percent / 60.0);
     return std::bernoulli_distribution(probability)(model_detail::context().random);
 }
 
 std::vector<std::pair<int, int>> DataGenerator::generate_order_items() {
+    auto& state = model_detail::context();
+    const double probability = state.discounted_probability;
+    if (!std::isfinite(probability) || probability < 0.0 || probability > 1.0)
+        throw std::invalid_argument("Discounted medicine probability must be between 0 and 1");
     if (mas_med.empty()) return {};
-    std::vector<double> weights(mas_med.size(), 1.0);
-    for (std::size_t i = 0; i < weights.size(); ++i)
-        if (model_detail::context().is_discounted(warehouse, static_cast<int>(i))) weights[i] = 3.0;
+    std::vector<int> discounted, ordinary;
+    for (std::size_t i = 0; i < mas_med.size(); ++i) {
+        auto& candidates = state.is_discounted(warehouse, static_cast<int>(i)) ? discounted : ordinary;
+        candidates.push_back(static_cast<int>(i));
+    }
     const int positions = model_detail::random_int(1, std::min(4, static_cast<int>(mas_med.size())));
     std::vector<std::pair<int, int>> result;
     for (int i = 0; i < positions; ++i) {
-        const auto selected = std::discrete_distribution<std::size_t>(weights.begin(), weights.end())
-            (model_detail::context().random);
-        result.emplace_back(static_cast<int>(selected), model_detail::random_int(1, 4));
-        weights[selected] = 0.0;
+        // Если категория исчерпана, выбираем из оставшейся. Внутри категории
+        // лекарства равновероятны и не повторяются в одном заказе.
+        const bool choose_discounted = ordinary.empty() ||
+            (!discounted.empty() && std::bernoulli_distribution(probability)(state.random));
+        auto& candidates = choose_discounted ? discounted : ordinary;
+        const int selected = model_detail::random_int(0, static_cast<int>(candidates.size()) - 1);
+        result.emplace_back(candidates[selected], model_detail::random_int(1, 4));
+        candidates.erase(candidates.begin() + selected);
     }
     return result;
 }

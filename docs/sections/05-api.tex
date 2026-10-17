@@ -58,6 +58,11 @@ int main() {
         p.couriers = 5;
         p.medicine_count = 15;
         p.markup_percent = 25.0;
+        p.orders_per_day = 60;
+        p.initial_capital = 1000000.0;
+        p.restock_threshold = 20;
+        p.markdown_days = 30;
+        p.discounted_probability = 0.75;
         p.seed = 42;
 
         configure_simulation(p);
@@ -86,12 +91,36 @@ int main() {
 реализации склада, заказа, статистики, генератора, контекста, поставок и движка;
 \code{main.cpp} консольного приложения в такую сборку не включается.
 
+Перед запуском значения полей формы можно перенести так:
+\begin{lstlisting}[language=C++]
+SimulationParameters p;
+p.initial_capital = ui->capitalSpin->value();
+p.restock_threshold = ui->thresholdSpin->value();
+p.markdown_days = ui->expiryDaysSpin->value();
+p.discounted_probability = ui->discountedProbSpin->value();
+// Set p.orders_per_day from the daily order limit control.
+configure_simulation(p);
+init_simulation();
+\end{lstlisting}
+Пример предполагает диапазон \code{discountedProbSpin} от 0 до 1.
+Если интерфейс показывает проценты от 0 до 100, используйте
+\code{ui->discountedProbSpin->value() / 100.0}.
+Имя поля дневного лимита определяет frontend. \code{expiryDaysSpin} задаёт
+дни до конца срока для начала уценки, а не полный срок годности лекарства.
+\code{capitalSpin} задаёт рубли, \code{thresholdSpin} --- упаковки.
+Дневной баланс доступен в \code{simulation_result().days.back().cash_balance},
+итоговый --- в \code{simulation_result().cash_balance}.
+
 \subsection{Параметры и сущности}
 \code{SimulationParameters} содержит поля \code{days}, \code{couriers},
 \code{medicine_count}, \code{markup_percent}, \code{card_discount},
 \code{large_purchase_discount}, \code{regular_discount},
 \code{maximum_discount}, \code{initial_count}, \code{regular_customers},
-\code{seed} и \code{initial_stock_file}. Значения по умолчанию и ограничения
+\code{seed}, \code{initial_stock_file}, \code{orders_per_day},
+\code{initial_capital}, \code{restock_threshold}, \code{markdown_days}
+и \code{discounted_probability}. Новые поля добавлены после прежних, чтобы
+сохранить порядок существующих членов при агрегатной инициализации.
+Значения по умолчанию и ограничения
 приведены в разделе~\ref{sec:running}; \code{validate()} проверяет их
 без запуска эксперимента. Соответствие имён CLI и полей:
 \code{--bulk-discount} задаёт \code{large_purchase_discount},
@@ -187,8 +216,10 @@ int main() {
 \code{delivered_orders}, \code{late_deliveries}, \code{arrived_supplies},
 \code{created_supplies}, \code{pending_orders},
 \code{courier_limits_satisfied}, \code{courier_load},
-\code{available_packages} и накопленную \code{totals}.
+\code{available_packages}, накопленную \code{totals} и \code{cash_balance}.
 Счётчик \code{planned_orders} входит в \code{received_orders}.
+\code{received_orders} не превышает \code{orders_per_day}; отложенные
+расписания учитываются как заказы только в день фактического создания.
 Размеры массивов нагрузки и остатков равны $M$ и $K$ соответственно.
 
 \code{SimulationResult} содержит \code{totals}, \code{profit},
@@ -196,7 +227,9 @@ int main() {
 \code{delivered_stock_cost}, \code{initial_packages},
 \code{supplied_packages}, \code{written_off_packages},
 \code{pending_deliveries}, \code{pending_orders}, \code{pending_supplies},
-\code{days} и \code{completed_orders}. Различайте:
+\code{days}, \code{completed_orders} и \code{cash_balance}. Денежный баланс
+равен начальному капиталу плюс выручка минус закупки; может быть отрицательным.
+Прибыль в \code{profit} не включает начальный капитал. Различайте:
 \begin{itemize}
   \item \code{pending_orders}: запросы в очереди, ещё без выделенного товара;
   \item \code{pending_deliveries}: уже подготовленные покупки на следующий день;

@@ -36,6 +36,9 @@ void ModelContext::reset(std::uint32_t seed) {
     current_day = 0;
     delivery_lead_days = 0;
     initial_count = 80;
+    restock_threshold = 20;
+    markdown_days = 30;
+    discounted_probability = 0.75;
     warehouses.clear();
     last_fulfillment.clear();
 }

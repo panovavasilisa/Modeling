@@ -45,6 +45,9 @@ public:
     int current_day = 0;
     int delivery_lead_days = 0;
     int initial_count = 80;
+    int restock_threshold = 20;
+    int markdown_days = 30;
+    double discounted_probability = 0.75;
     std::unordered_map<const Warehouse*, WarehouseAccounting> warehouses;
     std::vector<std::pair<int, int>> last_fulfillment;
 

@@ -71,7 +71,9 @@ medicine_id,count,expiration_day,unit_price
 \begin{lstlisting}
 N, M, K, seed, markup_percent,
 card_discount, bulk_discount, regular_discount, maximum_discount,
-initial_count, regular_customers, initial_stock_file
+initial_count, regular_customers, initial_stock_file,
+orders_per_day, initial_capital, restock_threshold,
+markdown_days, discounted_probability
 \end{lstlisting}
 \code{N}, \code{M}, \code{K} соответствуют полям C++ \code{days},
 \code{couriers}, \code{medicine_count}. \code{bulk_discount} соответствует
@@ -79,6 +81,11 @@ initial_count, regular_customers, initial_stock_file
 пустая при автоматической генерации. \code{initial_count} сохраняется
 в параметрах даже при использовании CSV и не заменяет фактическое
 \code{totals.initial_packages}.
+Новые имена совпадают с полями C++. \code{orders_per_day} ограничивает
+сумму плановых и обычных поступлений дня, \code{initial_capital} задаётся
+в рублях, \code{restock_threshold} --- в упаковках, \code{markdown_days}
+--- в днях. \code{discounted_probability} записывается в диапазоне 0--1,
+а не в процентах.
 
 \subsection{Итоговые показатели}
 {\small
@@ -91,6 +98,8 @@ initial_count, regular_customers, initial_stock_file
 \code{purchase_expenses} & Стоимость начального запаса и прибывших поставок. \\
 \code{write_off_losses} & Закупочная стоимость списанных упаковок. \\
 \code{profit} & Прибыль по формулам раздела~\ref{sec:model}. \\
+\code{cash_balance} & Начальный капитал плюс выручка минус закупки;
+возможен отрицательный результат. \\
 \code{available_stock_cost} & Закупочная стоимость доступных партий. \\
 \code{reserved_stock_cost} & Закупочная стоимость уже выделенного,
 но ещё не доставленного товара. \\
@@ -120,7 +129,8 @@ initial_count, regular_customers, initial_stock_file
 \midrule
 \endhead
 \code{day} & Номер завершённого дня от 1 до $N$. \\
-\code{received_orders} & Все новые запросы дня: плановые и обычные. \\
+\code{received_orders} & Все новые запросы дня: плановые и обычные;
+не более \code{parameters.orders_per_day}. \\
 \code{planned_orders} & Плановая часть новых запросов. \\
 \code{empty_orders} & Рассмотренные в этот день запросы с нулевой выдачей;
 они могут поступить раньше. \\
@@ -133,6 +143,8 @@ initial_count, regular_customers, initial_stock_file
 \code{created_supplies} & Число заявок, созданных сегодня. \\
 \code{income}, \code{purchase_expenses}, \code{write_off_losses}
 & Накопленные денежные суммы по конец дня включительно. \\
+\code{cash_balance} & Денежный баланс на конец дня:
+\code{initial_capital + income - purchase_expenses}. \\
 \code{courier_limits_satisfied} & Булево значение: у каждого курьера
 от 7 до 15 реальных доставок. \\
 \code{courier_load} & Массив длины $M$; элемент $c$ --- нагрузка курьера $c$. \\

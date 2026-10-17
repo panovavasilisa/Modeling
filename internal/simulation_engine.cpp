@@ -20,6 +20,16 @@ void SimulationParameters::validate() const {
         throw std::invalid_argument("Initial packages per medicine must be between 0 and 1000000");
     if (regular_customers < 0 || regular_customers > 100000)
         throw std::invalid_argument("Regular customer count must be between 0 and 100000");
+    if (orders_per_day < 0 || orders_per_day > 100000)
+        throw std::invalid_argument("Daily order limit must be between 0 and 100000");
+    if (!std::isfinite(initial_capital) || initial_capital < 0.0)
+        throw std::invalid_argument("Initial capital must be finite and nonnegative");
+    if (restock_threshold < 0 || restock_threshold > 1000000)
+        throw std::invalid_argument("Restock threshold must be between 0 and 1000000");
+    if (markdown_days < 0 || markdown_days > 1000000)
+        throw std::invalid_argument("Markdown horizon must be between 0 and 1000000 days");
+    if (!std::isfinite(discounted_probability) || discounted_probability < 0.0 || discounted_probability > 1.0)
+        throw std::invalid_argument("Discounted medicine probability must be between 0 and 1");
     model_detail::DiscountPolicy{card_discount, large_purchase_discount, regular_discount,
                                 maximum_discount, 1000.0}.validate();
 }
@@ -82,6 +92,9 @@ void SimulationEngine::initialize() {
     context().discounts = {parameters_.card_discount, parameters_.large_purchase_discount,
         parameters_.regular_discount, parameters_.maximum_discount, 1000.0};
     context().initial_count = parameters_.initial_count;
+    context().restock_threshold = parameters_.restock_threshold;
+    context().markdown_days = parameters_.markdown_days;
+    context().discounted_probability = parameters_.discounted_probability;
     context().delivery_lead_days = 1;
     N = parameters_.days;
     M = parameters_.couriers;
@@ -120,28 +133,39 @@ void SimulationEngine::begin_day(int day) {
     today_ = DailySimulationResult{};
     today_.day = day;
     today_.courier_load.assign(M, 0);
+    // Новые партии тоже участвуют в уценке текущего дня.
+    today_.arrived_supplies = supplier_->advance_to(day);
     warehouse.write_off(day);
     stats_.update(0, 0, context().collect_write_off(warehouse));
-    today_.arrived_supplies = supplier_->advance_to(day);
     phase_ = Phase::begun;
 }
 
 void SimulationEngine::generate_events(int day) {
     require_phase(Phase::begun, day);
+    std::vector<std::size_t> due;
     for (std::size_t i = 0; i < customers.size(); ++i) {
-        auto& customer = customers[i];
+        const auto& customer = customers[i];
         if (!customer.is_regular) continue;
         if (customer.periodicity <= 0) throw std::invalid_argument("Invalid recurring purchase period");
-        if (customer.next_purchase_day <= day) {
-            orders_.push_back({next_id_++, day, Order{static_cast<int>(i), customer.regular_purchases, 0}});
-            do { customer.next_purchase_day += customer.periodicity; } while (customer.next_purchase_day <= day);
-            ++today_.planned_orders;
-            ++today_.received_orders;
-        }
+        if (customer.next_purchase_day <= day) due.push_back(i);
+    }
+    // Отложенные плановые покупки обслуживаем по исходной дате, чтобы
+    // маленький лимит не давал постоянное преимущество первым клиентам списка.
+    std::stable_sort(due.begin(), due.end(), [](std::size_t a, std::size_t b) {
+        return customers[a].next_purchase_day < customers[b].next_purchase_day;
+    });
+    for (auto index : due) {
+        if (today_.received_orders >= parameters_.orders_per_day) break;
+        auto& customer = customers[index];
+        orders_.push_back({next_id_++, day, Order{static_cast<int>(index), customer.regular_purchases, 0}});
+        do { customer.next_purchase_day += customer.periodicity; } while (customer.next_purchase_day <= day);
+        ++today_.planned_orders;
+        ++today_.received_orders;
     }
     // Вероятность поступления заказов не зависит от M: число курьеров определяет
     // вместимость службы доставки, а не создаёт дополнительный спрос.
-    for (int trial = 0; trial < 180; ++trial) {
+    const int remaining_slots = parameters_.orders_per_day - today_.received_orders;
+    for (int trial = 0; trial < remaining_slots; ++trial) {
         if (!generator_.should_generate_order(global_marcup)) continue;
         generator_.generate_random_customers();
         orders_.push_back({next_id_++, day, Order{static_cast<int>(customers.size() - 1),
@@ -219,6 +243,7 @@ void SimulationEngine::finish_day() {
     today_.available_packages.assign(mas_med.size(), 0);
     for (const auto& batch : warehouse.inventory) today_.available_packages[batch.mas_med_id] += batch.count;
     today_.totals = stats_;
+    today_.cash_balance = parameters_.initial_capital + (stats_.income - stats_.purchase_expenses);
     result_.days.push_back(today_);
     phase_ = Phase::finished;
     update_result();
@@ -226,6 +251,8 @@ void SimulationEngine::finish_day() {
 
 void SimulationEngine::update_result() {
     result_.totals = stats_;
+    result_.cash_balance = parameters_.initial_capital + (stats_.income - stats_.purchase_expenses);
+    if (!std::isfinite(result_.cash_balance)) throw std::overflow_error("Cash balance overflow");
     result_.available_stock_cost = context().inventory_cost(warehouse);
     result_.reserved_stock_cost = 0.0;
     for (const auto& purchase : tomorrow_) result_.reserved_stock_cost += purchase.acquisition_cost;
@@ -248,6 +275,8 @@ void SimulationEngine::update_result() {
 void SimulationEngine::write_summary(std::ostream& output) const {
     output << std::fixed << std::setprecision(2)
            << "\nИтоги за " << result_.days.size() << " дней (seed=" << parameters_.seed << ")\n"
+           << "Начальный капитал: " << parameters_.initial_capital << " руб.\n"
+           << "Денежный остаток: " << result_.cash_balance << " руб.\n"
            << "Доход доставленных заказов: " << result_.totals.income << " руб.\n"
            << "Расходы на закупку (включая начальный запас): " << result_.totals.purchase_expenses << " руб.\n"
            << "Потери от списания: " << result_.totals.write_off_losses << " руб.\n"

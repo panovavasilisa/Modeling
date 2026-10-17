@@ -30,6 +30,8 @@ void Warehouse::add_batch(const StoreBatch& batch) {
 
 void Warehouse::write_off(int current_day) {
     if (current_day < 0) throw std::invalid_argument("Negative simulation day");
+    const int markdown_days = model_detail::context().markdown_days;
+    if (markdown_days < 0) throw std::invalid_argument("Negative markdown horizon");
     auto& ledger = model_detail::context().accounting(*this);
     std::vector<StoreBatch> kept;
     std::vector<model_detail::BatchAccounting> kept_costs;
@@ -45,7 +47,7 @@ void Warehouse::write_off(int current_day) {
             ledger.written_off_packages += batch.count;
             continue;
         }
-        if (batch.expiration_day - current_day <= 30 && !cost.discounted) {
+        if (batch.expiration_day - current_day <= markdown_days && !cost.discounted) {
             batch.batch_price *= 0.5;
             cost.selling_base = batch.batch_price;
             cost.discounted = true;
