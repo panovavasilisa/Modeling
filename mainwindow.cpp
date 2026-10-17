@@ -33,12 +33,23 @@ MainWindow::MainWindow(QWidget* parent)
     ui->cardDiscountSpin->setRange(0.0, 9.0);     ui->cardDiscountSpin->setValue(5.0);
     ui->regularDiscountSpin->setRange(0.0, 9.0);  ui->regularDiscountSpin->setValue(5.0);
     ui->bigOrderDiscountSpin->setRange(0.0, 9.0); ui->bigOrderDiscountSpin->setValue(3.0);
-    ui->maxDiscountSpin->setRange(0.0, 9.0);      ui->maxDiscountSpin->setValue(9.0);
-    ui->thresholdSpin->setValue(10);
+    ui->maxDiscountSpin->setRange(0.0, 9.0);
+    ui->maxDiscountSpin->setValue(9.0);
+
+    ui->thresholdSpin->setRange(1, 100);
+    ui->thresholdSpin->setValue(20);
+
+    ui->capitalSpin->setRange(0.0, 1000000000.0);
+    ui->capitalSpin->setValue(1000000.0);
+
+    ui->expiryDaysSpin->setRange(1, 90);
     ui->expiryDaysSpin->setValue(30);
+
+    ui->ordersPerDaySpin->setRange(1, 200);
     ui->ordersPerDaySpin->setValue(20);
+
     ui->discountedProbSpin->setRange(0, 100);
-    ui->discountedProbSpin->setValue(30);
+    ui->discountedProbSpin->setValue(75);
 
     refreshAllTabs();
 }
@@ -47,16 +58,26 @@ MainWindow::~MainWindow() { delete ui; }
 
 SimulationParameters MainWindow::buildParameters() const {
     SimulationParameters p;
-    p.days               = ui->daysSpin->value();
-    p.couriers           = ui->couriersSpin->value();
-    p.medicine_count     = ui->medicinesSpin->value();
-    p.markup_percent     = ui->markupSpin->value();
-    p.card_discount      = ui->cardDiscountSpin->value();
+    p.days                    = ui->daysSpin->value();
+    p.couriers                = ui->couriersSpin->value();
+    p.medicine_count          = ui->medicinesSpin->value();
+    p.initial_capital         = ui->capitalSpin->value();
+
+    p.markup_percent          = ui->markupSpin->value();
+    p.card_discount           = ui->cardDiscountSpin->value();
     p.large_purchase_discount = ui->bigOrderDiscountSpin->value();
-    p.regular_discount   = ui->regularDiscountSpin->value();
-    p.maximum_discount   = ui->maxDiscountSpin->value();
-    p.regular_customers  = 10;
-    p.seed               = 5489;
+    p.regular_discount        = ui->regularDiscountSpin->value();
+    p.maximum_discount        = ui->maxDiscountSpin->value();
+
+    p.restock_threshold       = ui->thresholdSpin->value();
+    p.markdown_days           = ui->expiryDaysSpin->value();
+
+    p.orders_per_day          = ui->ordersPerDaySpin->value();
+    // В интерфейсе проценты (0..100), а в бэк передаём доли (0..1)
+    p.discounted_probability  = ui->discountedProbSpin->value() / 100.0;
+
+    p.regular_customers       = 10;
+    p.seed                    = 5489;
     return p;
 }
 

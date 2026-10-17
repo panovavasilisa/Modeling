@@ -111,6 +111,7 @@ public:
     RequestsTab *requestsTab;
     ResultsTab *resultsTab;
     LogTab *logTab;
+    QWidget *animTab;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -418,6 +419,9 @@ public:
         logTab = new LogTab();
         logTab->setObjectName("logTab");
         tabs->addTab(logTab, QString());
+        animTab = new QWidget();
+        animTab->setObjectName("animTab");
+        tabs->addTab(animTab, QString());
 
         gridLayout->addWidget(tabs, 1, 0, 1, 1);
 
@@ -467,6 +471,7 @@ public:
         tabs->setTabText(tabs->indexOf(requestsTab), QCoreApplication::translate("MainWindow", "\320\227\320\260\321\217\320\262\320\272\320\270", nullptr));
         tabs->setTabText(tabs->indexOf(resultsTab), QCoreApplication::translate("MainWindow", "\320\240\320\265\320\267\321\203\320\273\321\214\321\202\320\260\321\202\321\213", nullptr));
         tabs->setTabText(tabs->indexOf(logTab), QCoreApplication::translate("MainWindow", "\320\226\321\203\321\200\320\275\320\260\320\273", nullptr));
+        tabs->setTabText(tabs->indexOf(animTab), QCoreApplication::translate("MainWindow", "\320\220\320\275\320\270\320\274\320\260\321\206\320\270\321\217", nullptr));
     } // retranslateUi
 
 };
