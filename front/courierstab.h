@@ -1,10 +1,15 @@
-#ifndef COURIERSTAB_H
-#define COURIERSTAB_H
+#pragma once
+#include <QWidget>
+#include <QTableView>
+#include <QStandardItemModel>
 
-class courierstab
-{
+class CouriersTab : public QWidget {
+    Q_OBJECT
 public:
-    courierstab();
+    explicit CouriersTab(QWidget* parent = nullptr);
+public slots:
+    void refresh();
+private:
+    QTableView* table;
+    QStandardItemModel* model;
 };
-
-#endif // COURIERSTAB_H

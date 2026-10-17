@@ -77,7 +77,7 @@
        <bool>false</bool>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>7</number>
       </property>
       <widget class="QWidget" name="paramsTab">
        <attribute name="title">
@@ -461,69 +461,26 @@
        <widget class="QGroupBox" name="groupBox_5">
         <property name="geometry">
          <rect>
-          <x>690</x>
-          <y>30</y>
-          <width>541</width>
-          <height>301</height>
+          <x>680</x>
+          <y>40</y>
+          <width>211</width>
+          <height>51</height>
          </rect>
         </property>
         <property name="title">
          <string>Начальный набор лекарств</string>
         </property>
-        <widget class="QWidget" name="horizontalLayoutWidget_3">
+        <widget class="QPushButton" name="generateBtn">
          <property name="geometry">
           <rect>
-           <x>20</x>
-           <y>30</y>
-           <width>271</width>
-           <height>31</height>
-          </rect>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_3">
-          <item>
-           <widget class="QPushButton" name="addBtn">
-            <property name="text">
-             <string>Добавить</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="generateBtn">
-            <property name="text">
-             <string>Сгенерировать</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="deleteBtn">
-            <property name="text">
-             <string>Удалить</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QTableView" name="tableView">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>71</y>
-           <width>501</width>
-           <height>181</height>
-          </rect>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="saveBtn">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>260</y>
-           <width>91</width>
-           <height>31</height>
+           <x>10</x>
+           <y>20</y>
+           <width>111</width>
+           <height>21</height>
           </rect>
          </property>
          <property name="text">
-          <string>Сохранить</string>
+          <string>Сгенерировать</string>
          </property>
         </widget>
        </widget>
@@ -533,22 +490,22 @@
         <string>Склад</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="ordersTab">
+      <widget class="OrdersTab" name="ordersTab">
        <attribute name="title">
         <string>Заказы</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="couriersTab">
+      <widget class="CouriersTab" name="couriersTab">
        <attribute name="title">
         <string>Курьеры</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="requestsTab">
+      <widget class="RequestsTab" name="requestsTab">
        <attribute name="title">
         <string>Заявки</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="resultsTab">
+      <widget class="ResultsTab" name="resultsTab">
        <attribute name="title">
         <string>Результаты</string>
        </attribute>
@@ -556,6 +513,11 @@
       <widget class="LogTab" name="logTab">
        <attribute name="title">
         <string>Журнал</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="animTab">
+       <attribute name="title">
+        <string>Анимация</string>
        </attribute>
       </widget>
      </widget>
@@ -571,8 +533,29 @@
   </customwidget>
   <customwidget>
    <class>LogTab</class>
+   <extends>QTabWidget</extends>
+   <header location="global">front/logtab.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>OrdersTab</class>
    <extends>QWidget</extends>
-   <header>front/logtab.h</header>
+   <header>front/orderstab.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CouriersTab</class>
+   <extends>QWidget</extends>
+   <header>front/courierstab.h</header>
+  </customwidget>
+  <customwidget>
+   <class>RequestsTab</class>
+   <extends>QWidget</extends>
+   <header>front/requeststab.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ResultsTab</class>
+   <extends>QWidget</extends>
+   <header>front/resultstab.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

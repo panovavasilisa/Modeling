@@ -8,6 +8,7 @@ INCLUDEPATH += $$PWD $$PWD/back
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
 
 SOURCES += \
+        front/resultstab.cpp \
         order.cpp \
         statistics.cpp \
         store.cpp \
@@ -35,6 +36,7 @@ HEADERS += \
     back/statistics.h \
     back/store.h \
     back/simulation.h \
+    front/resultstab.h \
     internal/model_support.h \
     internal/supply_manager.h \
     internal/simulation_engine.h \

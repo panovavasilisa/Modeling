@@ -17,7 +17,6 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
@@ -26,10 +25,13 @@
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QTabWidget>
-#include <QtWidgets/QTableView>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
-#include "front/logtab.h"
+#include <front/logtab.h>
+#include "front/courierstab.h"
+#include "front/orderstab.h"
+#include "front/requeststab.h"
+#include "front/resultstab.h"
 #include "front/stocktab.h"
 
 QT_BEGIN_NAMESPACE
@@ -102,18 +104,12 @@ public:
     QLabel *label_19;
     QSpinBox *discountedProbSpin;
     QGroupBox *groupBox_5;
-    QWidget *horizontalLayoutWidget_3;
-    QHBoxLayout *horizontalLayout_3;
-    QPushButton *addBtn;
     QPushButton *generateBtn;
-    QPushButton *deleteBtn;
-    QTableView *tableView;
-    QPushButton *saveBtn;
     StockTab *stockTab;
-    QWidget *ordersTab;
-    QWidget *couriersTab;
-    QWidget *requestsTab;
-    QWidget *resultsTab;
+    OrdersTab *ordersTab;
+    CouriersTab *couriersTab;
+    RequestsTab *requestsTab;
+    ResultsTab *resultsTab;
     LogTab *logTab;
 
     void setupUi(QMainWindow *MainWindow)
@@ -399,48 +395,24 @@ public:
 
         groupBox_5 = new QGroupBox(paramsTab);
         groupBox_5->setObjectName("groupBox_5");
-        groupBox_5->setGeometry(QRect(690, 30, 541, 301));
-        horizontalLayoutWidget_3 = new QWidget(groupBox_5);
-        horizontalLayoutWidget_3->setObjectName("horizontalLayoutWidget_3");
-        horizontalLayoutWidget_3->setGeometry(QRect(20, 30, 271, 31));
-        horizontalLayout_3 = new QHBoxLayout(horizontalLayoutWidget_3);
-        horizontalLayout_3->setObjectName("horizontalLayout_3");
-        horizontalLayout_3->setContentsMargins(0, 0, 0, 0);
-        addBtn = new QPushButton(horizontalLayoutWidget_3);
-        addBtn->setObjectName("addBtn");
-
-        horizontalLayout_3->addWidget(addBtn);
-
-        generateBtn = new QPushButton(horizontalLayoutWidget_3);
+        groupBox_5->setGeometry(QRect(680, 40, 211, 51));
+        generateBtn = new QPushButton(groupBox_5);
         generateBtn->setObjectName("generateBtn");
-
-        horizontalLayout_3->addWidget(generateBtn);
-
-        deleteBtn = new QPushButton(horizontalLayoutWidget_3);
-        deleteBtn->setObjectName("deleteBtn");
-
-        horizontalLayout_3->addWidget(deleteBtn);
-
-        tableView = new QTableView(groupBox_5);
-        tableView->setObjectName("tableView");
-        tableView->setGeometry(QRect(20, 71, 501, 181));
-        saveBtn = new QPushButton(groupBox_5);
-        saveBtn->setObjectName("saveBtn");
-        saveBtn->setGeometry(QRect(20, 260, 91, 31));
+        generateBtn->setGeometry(QRect(10, 20, 111, 21));
         tabs->addTab(paramsTab, QString());
         stockTab = new StockTab();
         stockTab->setObjectName("stockTab");
         tabs->addTab(stockTab, QString());
-        ordersTab = new QWidget();
+        ordersTab = new OrdersTab();
         ordersTab->setObjectName("ordersTab");
         tabs->addTab(ordersTab, QString());
-        couriersTab = new QWidget();
+        couriersTab = new CouriersTab();
         couriersTab->setObjectName("couriersTab");
         tabs->addTab(couriersTab, QString());
-        requestsTab = new QWidget();
+        requestsTab = new RequestsTab();
         requestsTab->setObjectName("requestsTab");
         tabs->addTab(requestsTab, QString());
-        resultsTab = new QWidget();
+        resultsTab = new ResultsTab();
         resultsTab->setObjectName("resultsTab");
         tabs->addTab(resultsTab, QString());
         logTab = new LogTab();
@@ -453,7 +425,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        tabs->setCurrentIndex(6);
+        tabs->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
@@ -487,10 +459,7 @@ public:
         dependencyCheck->setText(QCoreApplication::translate("MainWindow", "\320\227\320\260\320\262\320\270\321\201\320\270\320\274\320\276\321\201\321\202\321\214 \320\276\321\202 \320\275\320\260\321\206\320\265\320\275\320\272\320\270", nullptr));
         label_19->setText(QCoreApplication::translate("MainWindow", "\320\222\320\265\321\200\320\276\321\217\321\202\320\275\320\276\321\201\321\202\321\214 \321\203\321\206\320\265\320\275\321\221\320\275\320\275\321\213\321\205", nullptr));
         groupBox_5->setTitle(QCoreApplication::translate("MainWindow", "\320\235\320\260\321\207\320\260\320\273\321\214\320\275\321\213\320\271 \320\275\320\260\320\261\320\276\321\200 \320\273\320\265\320\272\320\260\321\200\321\201\321\202\320\262", nullptr));
-        addBtn->setText(QCoreApplication::translate("MainWindow", "\320\224\320\276\320\261\320\260\320\262\320\270\321\202\321\214", nullptr));
         generateBtn->setText(QCoreApplication::translate("MainWindow", "\320\241\320\263\320\265\320\275\320\265\321\200\320\270\321\200\320\276\320\262\320\260\321\202\321\214", nullptr));
-        deleteBtn->setText(QCoreApplication::translate("MainWindow", "\320\243\320\264\320\260\320\273\320\270\321\202\321\214", nullptr));
-        saveBtn->setText(QCoreApplication::translate("MainWindow", "\320\241\320\276\321\205\321\200\320\260\320\275\320\270\321\202\321\214", nullptr));
         tabs->setTabText(tabs->indexOf(paramsTab), QCoreApplication::translate("MainWindow", "\320\237\320\260\321\200\320\260\320\274\320\265\321\202\321\200\321\213", nullptr));
         tabs->setTabText(tabs->indexOf(stockTab), QCoreApplication::translate("MainWindow", "\320\241\320\272\320\273\320\260\320\264", nullptr));
         tabs->setTabText(tabs->indexOf(ordersTab), QCoreApplication::translate("MainWindow", "\320\227\320\260\320\272\320\260\320\267\321\213", nullptr));

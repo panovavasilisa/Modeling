@@ -3,6 +3,10 @@
 
 #include "back/data.h"
 #include "internal/model_support.h"
+#include "front/orderstab.h"
+#include "front/courierstab.h"
+#include "front/requeststab.h"
+#include "front/resultstab.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), day(0), totalDays(15)
@@ -149,8 +153,8 @@ void MainWindow::doStep() {
 
 void MainWindow::refreshAllTabs() {
     ui->stockTab->refresh();
-    // следующие вкладки подключим отдельно:
-    // ui->ordersTab->refresh();
-    // ui->couriersTab->refresh();
-    // ui->requestsTab->refresh();
+    ui->ordersTab->refresh();
+    ui->couriersTab->refresh();
+    ui->requestsTab->refresh();
+    ui->resultsTab->refresh();
 }

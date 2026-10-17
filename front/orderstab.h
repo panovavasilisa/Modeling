@@ -1,10 +1,15 @@
-#ifndef ORDERSTAB_H
-#define ORDERSTAB_H
+#pragma once
+#include <QWidget>
+#include <QTableView>
+#include <QStandardItemModel>
 
-class orderstab
-{
+class OrdersTab : public QWidget {
+    Q_OBJECT
 public:
-    orderstab();
+    explicit OrdersTab(QWidget* parent = nullptr);
+public slots:
+    void refresh();
+private:
+    QTableView* table;
+    QStandardItemModel* model;
 };
-
-#endif // ORDERSTAB_H
