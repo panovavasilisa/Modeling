@@ -7,6 +7,7 @@
 #include "front/courierstab.h"
 #include "front/requeststab.h"
 #include "front/resultstab.h"
+#include "front/animtab.h"
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), day(0), totalDays(15)
@@ -109,6 +110,7 @@ void MainWindow::on_generateBtn_clicked() {
 
     refreshAllTabs();
     ui->tabs->setCurrentWidget(ui->stockTab);
+    ui->animTab->resetAnimation();
 }
 
 void MainWindow::on_startBtn_clicked() {
@@ -178,4 +180,39 @@ void MainWindow::refreshAllTabs() {
     ui->couriersTab->refresh();
     ui->requestsTab->refresh();
     ui->resultsTab->refresh();
+
+    /*const auto& r = simulation_result();
+    int activeCouriers = 0;
+    int stockCount = 0;
+
+    if (!r.days.empty()) {
+        // Считаем, сколько курьеров реально работали в последний день
+        for (int load : r.days.back().courier_load) {
+            if (load > 0) activeCouriers++;
+        }
+    }
+
+    // Общий остаток на складе на текущий момент
+    for (const auto& b : warehouse.inventory) {
+        stockCount += b.count;
+    }
+
+    // Если вкладка называется animTab (проверь имя в .ui!)
+    if (ui->animTab) {
+        ui->animTab->updateState(day, stockCount, activeCouriers);
+    }*/
+
+    // --- НОВОЕ: Обновление анимации ---
+    const auto& r = simulation_result();
+    if (!r.days.empty()) {
+        const auto& today = r.days.back();
+
+        // Считаем общий остаток на складе
+        int stockCount = 0;
+        for (const auto& b : warehouse.inventory) stockCount += b.count;
+
+        // Передаем: день, остаток, нагрузку курьеров (сколько у кого заказов)
+        // и сколько новых заявок пришло (created_supplies).
+        ui->animTab->updateState(day, stockCount, today.courier_load, today.created_supplies);
+    }
 }

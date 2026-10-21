@@ -27,6 +27,7 @@
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+#include <front/animtab.h>
 #include <front/logtab.h>
 #include "front/courierstab.h"
 #include "front/orderstab.h"
@@ -111,7 +112,7 @@ public:
     RequestsTab *requestsTab;
     ResultsTab *resultsTab;
     LogTab *logTab;
-    QWidget *animTab;
+    AnimTab *animTab;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -419,7 +420,7 @@ public:
         logTab = new LogTab();
         logTab->setObjectName("logTab");
         tabs->addTab(logTab, QString());
-        animTab = new QWidget();
+        animTab = new AnimTab();
         animTab->setObjectName("animTab");
         tabs->addTab(animTab, QString());
 
@@ -429,7 +430,7 @@ public:
 
         retranslateUi(MainWindow);
 
-        tabs->setCurrentIndex(0);
+        tabs->setCurrentIndex(7);
 
 
         QMetaObject::connectSlotsByName(MainWindow);

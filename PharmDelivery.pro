@@ -8,6 +8,7 @@ INCLUDEPATH += $$PWD $$PWD/back
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
 
 SOURCES += \
+        front/animtab.cpp \
         front/resultstab.cpp \
         order.cpp \
         statistics.cpp \
@@ -24,6 +25,7 @@ SOURCES += \
         front/widgets/loadring.cpp \
         front/widgets/stockbar.cpp \
         main.cpp \
+        front/animtab.cpp \
         mainwindow.cpp
 
 HEADERS += \
@@ -36,6 +38,7 @@ HEADERS += \
     back/statistics.h \
     back/store.h \
     back/simulation.h \
+    front/animtab.h \
     front/resultstab.h \
     internal/model_support.h \
     internal/supply_manager.h \
@@ -47,6 +50,7 @@ HEADERS += \
     front/stocktab.h \
     front/widgets/loadring.h \
     front/widgets/stockbar.h \
+    front/animtab.h \
     mainwindow.h
 
 FORMS += \
@@ -59,3 +63,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 DISTFILES += \
     front/ff.txt
+
+RESOURCES += \
+    resources.qrc
