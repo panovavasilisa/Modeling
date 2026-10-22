@@ -4,7 +4,6 @@
 #include "medicine.h"
 #include "customer.h"
 #include "store.h"
-#include <store.h>
 
 inline Warehouse warehouse;
 inline double global_marcup;
