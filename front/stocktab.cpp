@@ -18,7 +18,7 @@ StockTab::StockTab(QWidget* parent) : QWidget(parent) {
     model = new QStandardItemModel(this);
     model->setHorizontalHeaderLabels({
         "ID", "Вид", "Группа", "Дозировка, мг",
-        "Кол-во", "Истекает (день)", "Цена партии", "Опт. цена"
+        "Кол-во", "Истекает (день)", "Цена упаковки, ₽", "Опт. цена, ₽"
     });
 
     table->setModel(model);

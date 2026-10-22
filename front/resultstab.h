@@ -1,13 +1,14 @@
 #pragma once
 #include <QWidget>
-#include <QTextEdit>
-
+class QTextEdit;
 class ResultsTab : public QWidget {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    explicit ResultsTab(QWidget* parent = nullptr);
+  explicit ResultsTab(QWidget *parent = nullptr);
 public slots:
-    void refresh();
+  void refresh();
+
 private:
-    QTextEdit* text;
+  QTextEdit *text;
+  QWidget *chart;
 };

@@ -4,16 +4,16 @@ CONFIG += c++17
 
 INCLUDEPATH += $$PWD $$PWD/back
 
-# You can make your code fail to compile if it uses deprecated APIs.
+# Проверка использования устаревших интерфейсов Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
 
 SOURCES += \
-        front/animtab.cpp \
         front/resultstab.cpp \
         order.cpp \
         statistics.cpp \
         store.cpp \
         data_generator.cpp \
+        internal/simulation_cli.cpp \
         internal/model_support.cpp \
         internal/supply_manager.cpp \
         internal/simulation_engine.cpp \
@@ -38,7 +38,6 @@ HEADERS += \
     back/statistics.h \
     back/store.h \
     back/simulation.h \
-    front/animtab.h \
     front/resultstab.h \
     internal/model_support.h \
     internal/supply_manager.h \
@@ -53,10 +52,8 @@ HEADERS += \
     front/animtab.h \
     mainwindow.h
 
-FORMS += \
-    mainwindow.ui
 
-# Default rules for deployment.
+# Стандартные правила установки.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target

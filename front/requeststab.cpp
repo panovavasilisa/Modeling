@@ -24,7 +24,7 @@ void RequestsTab::refresh() {
     const auto& r = simulation_result();
     for (const auto& req : r.pending_supplies) {
         QString name = "?";
-        if (req.mas_med_id >= 0 && req.mas_med_id < (int)type_med.size()) {
+        if (req.mas_med_id >= 0 && req.mas_med_id < (int)mas_med.size()) {
             const auto& m = mas_med[req.mas_med_id];
             if (m.type_med_id >= 0 && m.type_med_id < (int)type_med.size())
                 name = QString::fromStdString(type_med[m.type_med_id])

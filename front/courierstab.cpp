@@ -38,7 +38,8 @@ void CouriersTab::refresh() {
         row << new QStandardItem(QString("Курьер %1").arg(i + 1));
         row << new QStandardItem(QString::number(load));
         row << new QStandardItem(QString::number(total[i]));
-        row << new QStandardItem(ok ? "да" : "нет");
+        row << new QStandardItem(ok ? "Норма" : load < 7 ? "Недогрузка" : "Перегрузка");
+        for (auto* item : row) item->setForeground(QColor(ok ? "#087f70" : "#a96c20"));
         model->appendRow(row);
     }
     table->resizeColumnsToContents();

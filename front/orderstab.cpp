@@ -12,7 +12,7 @@ OrdersTab::OrdersTab(QWidget* parent) : QWidget(parent) {
     table->setAlternatingRowColors(true);
     model = new QStandardItemModel(this);
     model->setHorizontalHeaderLabels({
-        "№", "Заказ", "Доставка", "Курьер", "ФИО", "Адрес",
+        "№", "Заказ", "Доставка", "Курьер", "ФИО", "Телефон", "Адрес", "Карта",
         "Запрошено", "Выдано", "Цена"
     });
     table->setModel(model);
@@ -34,7 +34,9 @@ void OrdersTab::refresh() {
                                      ? QString("Курьер %1").arg(o.courier_index + 1)
                                      : QString("—"));
         row << new QStandardItem(QString::fromStdString(o.customer.fio));
+        row << new QStandardItem(QString::fromStdString(o.customer.phone));
         row << new QStandardItem(QString::fromStdString(o.customer.address));
+        row << new QStandardItem(o.customer.has_card ? QString::number(o.customer.card_number) : "—");
 
         QStringList req, sup;
         for (auto& p : o.requested) req << QString("%1×%2").arg(p.first).arg(p.second);
