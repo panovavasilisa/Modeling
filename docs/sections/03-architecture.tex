@@ -16,7 +16,7 @@
               align=center,text width=43mm,minimum height=12mm,font=\small},
   arrow/.style={-{Latex[length=2mm]},draw=accent,thick}
 ]
-\node[box] (entry) {\texttt{main.cpp}\\Командная строка и запуск};
+\node[box] (entry) {\texttt{main.cpp}, \texttt{MainWindow}\\Окно, параметры и таймер};
 \node[box,below=of entry] (public) {\texttt{back/simulation.h}\\Публичный контракт};
 \node[box,below=of public] (engine) {\texttt{SimulationEngine}\\Фазы дня, очередь, результаты};
 \node[box,below left=9mm and 5mm of engine] (domain) {\texttt{Warehouse}, \texttt{Order}\\Товар, выдача и цена};
@@ -35,7 +35,8 @@
 \code{DataGenerator} использует случайный генератор из \code{ModelContext}
 и текущий склад. \code{simulation_cli.cpp} читает параметры, представляет
 каталог и результаты в консоли и записывает JSON. Его форматирование отделено
-от правил работы склада и заказов.
+от правил работы склада и заказов. Модуль не включён в текущую GUI-сборку;
+его отдельно подключает интеграционный тест.
 
 \subsection{Карта файлов}
 {\small
@@ -45,8 +46,11 @@
 \midrule
 \endhead
 \code{PharmDelivery.pro} & Список исходников, заголовков и параметры qmake. \\
-\code{main.cpp} & Разбор аргументов, создание \code{QApplication}, дневной цикл,
-итоговый вывод и обработка исключений. \\
+\code{main.cpp} & Создание QApplication и MainWindow, показ окна и цикл событий. \\
+\code{mainwindow.cpp}, \code{mainwindow.h}, \code{mainwindow.ui}
+& Чтение формы, вызовы backend, дневной шаг по таймеру и отображение данных. \\
+\code{front/}, \code{images/}, \code{resources.qrc}
+& Вкладки интерфейса и отдельная иллюстративная анимация. \\
 \code{back/simulation.h} & Параметры эксперимента, структуры результатов,
 публичные функции управления моделью. \\
 \code{back/data.h} & Глобальные склад, каталог, покупатели и параметры $N,M,K$. \\
@@ -66,9 +70,9 @@
 \code{internal/simulation_engine.*} & Состояние эксперимента, порядок фаз,
 очередь заказов, распределение доставок и баланс. \\
 \code{internal/simulation_cli.*} & Аргументы, справка, консольные и JSON-отчёты. \\
-\code{customer.cpp}, \code{medicine.cpp}, \code{request.cpp}, \code{data.cpp}
-& В текущей версии пусты; соответствующие поля и inline-глобальные переменные
-объявлены в заголовках. \\
+\code{back/customer.h}, \code{back/medicine.h}, \code{back/request.h},
+\code{back/data.h} & Поля сущностей и inline-глобальные данные определяются
+в заголовках; одноимённых файлов .cpp в текущем проекте нет. \\
 \code{examples/initial-stock.csv} & Пример начальных партий для 15 лекарств. \\
 \code{tests/} & Модульные, интеграционные и консольные проверки. \\
 \code{docs/} & Исходники этой документации и инструкция её сборки. \\
