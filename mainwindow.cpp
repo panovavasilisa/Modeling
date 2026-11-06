@@ -143,6 +143,10 @@ void MainWindow::onSpeedChanged(int value) {
     int interval = 2000 - (value - 1) * 210;
     if (interval < 100) interval = 100;
     timer->setInterval(interval);
+
+    if (ui->animTab) {
+        ui->animTab->setSpeedMultiplier(value / 5.0);
+    }
 }
 
 void MainWindow::tick() {

@@ -12,6 +12,7 @@ public:
     void resetAnimation();
     void pauseAnimation();
     void resumeAnimation();
+    void setSpeedMultiplier(double mult);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -20,6 +21,8 @@ private slots:
     void animate();
 
 private:
+    double speedMultiplier;
+
     struct Courier {
         double x, y;
         double baseY;

@@ -3,26 +3,35 @@
 #include <cmath>
 #include <QDebug>
 
+
 AnimTab::AnimTab(QWidget* parent) : QWidget(parent), currentDay(0), totalStock(0), requestTimer(0) {
+    // Загрузка и сжатие Склада
     imgWarehouse.load(":/images/warehouse.png");
-    imgWarehouse = imgWarehouse.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     if (imgWarehouse.isNull()) qDebug() << "ОШИБКА: Не найдена картинка склада!";
+    imgWarehouse = imgWarehouse.scaled(200, 200, Qt::KeepAspectRatio, Qt::FastTransformation);
 
+    // Загрузка и сжатие Дома
     imgHouse.load(":/images/house.png");
-    imgHouse = imgHouse.scaled(150, 150, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     if (imgHouse.isNull()) qDebug() << "ОШИБКА: Не найдена картинка дома!";
+    imgHouse = imgHouse.scaled(150, 150, Qt::KeepAspectRatio, Qt::FastTransformation);
 
+    // Загрузка и сжатие Курьера
     imgCourier.load(":/images/courier.png");
-    imgCourier = imgCourier.scaled(50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     if (imgCourier.isNull()) qDebug() << "ОШИБКА: Не найдена картинка курьера!";
+    imgCourier = imgCourier.scaled(50, 50, Qt::KeepAspectRatio, Qt::FastTransformation);
 
+    // Загрузка и сжатие Телефона
     imgPhone.load(":/images/phone.png");
-    imgPhone = imgPhone.scaled(60, 60, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     if (imgPhone.isNull()) qDebug() << "ОШИБКА: Не найдена картинка телефона!";
+    imgPhone = imgPhone.scaled(60, 60, Qt::KeepAspectRatio, Qt::FastTransformation);
+
+    speedMultiplier = 1.0; // Инициализация скорости
+
+    setAttribute(Qt::WA_OpaquePaintEvent);
 
     animTimer = new QTimer(this);
     connect(animTimer, &QTimer::timeout, this, &AnimTab::animate);
-    animTimer->start(16);
+    animTimer->start(33);
     setMinimumSize(600, 400);
 }
 
@@ -57,13 +66,18 @@ void AnimTab::animate() {
     bool needsRedraw = false;
 
     for (auto& c : couriers) {
+        // Если курьер спит и нет заказов — он не двигается, перерисовка не нужна
+        if (c.state == Courier::Idle && c.deliveries == 0) {
+            continue;
+        }
+
         if (c.state == Courier::Idle && c.deliveries > 0) {
             c.state = Courier::GoingToCity;
             c.targetX = width() - 200;
         }
 
         if (c.state == Courier::GoingToCity) {
-            c.x += c.speed;
+            c.x += c.speed * speedMultiplier;
             c.y = c.baseY + std::sin(c.x * 0.03) * 20;
             if (c.x >= c.targetX) {
                 c.x = c.targetX;
@@ -73,7 +87,7 @@ void AnimTab::animate() {
             }
             needsRedraw = true;
         } else if (c.state == Courier::Returning) {
-            c.x -= c.speed;
+            c.x -= c.speed * speedMultiplier;
             c.y = c.baseY + std::sin(c.x * 0.03) * 20;
             if (c.x <= c.targetX) {
                 c.x = c.targetX;
@@ -83,8 +97,14 @@ void AnimTab::animate() {
         }
     }
 
-    if (requestTimer > 0) { requestTimer--; needsRedraw = true; }
-    if (needsRedraw) update();
+    if (requestTimer > 0) {
+        requestTimer--;
+        needsRedraw = true;
+    }
+
+    if (needsRedraw) {
+        update();
+    }
 }
 
 void AnimTab::paintEvent(QPaintEvent*) {
@@ -144,4 +164,8 @@ void AnimTab::resumeAnimation() {
     if (!animTimer->isActive()) {
         animTimer->start(16);
     }
+}
+
+void AnimTab::setSpeedMultiplier(double mult) {
+    speedMultiplier = mult;
 }
