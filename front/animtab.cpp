@@ -5,27 +5,23 @@
 
 
 AnimTab::AnimTab(QWidget* parent) : QWidget(parent), currentDay(0), totalStock(0), requestTimer(0) {
-    // Загрузка и сжатие Склада
     imgWarehouse.load(":/images/warehouse.png");
     if (imgWarehouse.isNull()) qDebug() << "ОШИБКА: Не найдена картинка склада!";
     imgWarehouse = imgWarehouse.scaled(200, 200, Qt::KeepAspectRatio, Qt::FastTransformation);
 
-    // Загрузка и сжатие Дома
     imgHouse.load(":/images/house.png");
     if (imgHouse.isNull()) qDebug() << "ОШИБКА: Не найдена картинка дома!";
     imgHouse = imgHouse.scaled(150, 150, Qt::KeepAspectRatio, Qt::FastTransformation);
 
-    // Загрузка и сжатие Курьера
     imgCourier.load(":/images/courier.png");
     if (imgCourier.isNull()) qDebug() << "ОШИБКА: Не найдена картинка курьера!";
     imgCourier = imgCourier.scaled(50, 50, Qt::KeepAspectRatio, Qt::FastTransformation);
 
-    // Загрузка и сжатие Телефона
     imgPhone.load(":/images/phone.png");
     if (imgPhone.isNull()) qDebug() << "ОШИБКА: Не найдена картинка телефона!";
     imgPhone = imgPhone.scaled(60, 60, Qt::KeepAspectRatio, Qt::FastTransformation);
 
-    speedMultiplier = 1.0; // Инициализация скорости
+    speedMultiplier = 1.0;
 
     setAttribute(Qt::WA_OpaquePaintEvent);
 
@@ -66,7 +62,6 @@ void AnimTab::animate() {
     bool needsRedraw = false;
 
     for (auto& c : couriers) {
-        // Если курьер спит и нет заказов — он не двигается, перерисовка не нужна
         if (c.state == Courier::Idle && c.deliveries == 0) {
             continue;
         }
