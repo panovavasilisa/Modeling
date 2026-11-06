@@ -21,7 +21,7 @@ RequestsTab::RequestsTab(QWidget* parent) : QWidget(parent) {
 
 void RequestsTab::refresh() {
     model->removeRows(0, model->rowCount());
-    const auto& r = simulation_result();
+    const auto& r = simulation_result(); //K
     for (const auto& req : r.pending_supplies) {
         QString name = "?";
         if (req.mas_med_id >= 0 && req.mas_med_id < (int)type_med.size()) {

@@ -20,7 +20,7 @@ CouriersTab::CouriersTab(QWidget* parent) : QWidget(parent) {
 
 void CouriersTab::refresh() {
     model->removeRows(0, model->rowCount());
-    const auto& r = simulation_result();
+    const auto& r = simulation_result(); //K
     if (r.days.empty()) return;
 
     const auto& last = r.days.back();

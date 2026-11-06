@@ -115,17 +115,23 @@ void MainWindow::on_generateBtn_clicked() {
 
 void MainWindow::on_startBtn_clicked() {
     if (day == 0) {
-        // Первый запуск — инициализация
         on_generateBtn_clicked();
     }
+    ui->animTab->resumeAnimation();
     timer->start();
 }
 
-void MainWindow::on_pauseBtn_clicked() { timer->stop(); }
+void MainWindow::on_pauseBtn_clicked() {
+    ui->animTab->pauseAnimation();
+    timer->stop();
+}
 void MainWindow::on_stepBtn_clicked()  { doStep(); }
 
 void MainWindow::on_resetBtn_clicked() {
+    ui->animTab->pauseAnimation();
+    ui->animTab->resetAnimation();
     timer->stop();
+
     day = 0;
     ui->lineEdit->setText("0");
     ui->logTab->clear();
@@ -181,28 +187,6 @@ void MainWindow::refreshAllTabs() {
     ui->requestsTab->refresh();
     ui->resultsTab->refresh();
 
-    /*const auto& r = simulation_result();
-    int activeCouriers = 0;
-    int stockCount = 0;
-
-    if (!r.days.empty()) {
-        // Считаем, сколько курьеров реально работали в последний день
-        for (int load : r.days.back().courier_load) {
-            if (load > 0) activeCouriers++;
-        }
-    }
-
-    // Общий остаток на складе на текущий момент
-    for (const auto& b : warehouse.inventory) {
-        stockCount += b.count;
-    }
-
-    // Если вкладка называется animTab (проверь имя в .ui!)
-    if (ui->animTab) {
-        ui->animTab->updateState(day, stockCount, activeCouriers);
-    }*/
-
-    // --- НОВОЕ: Обновление анимации ---
     const auto& r = simulation_result();
     if (!r.days.empty()) {
         const auto& today = r.days.back();

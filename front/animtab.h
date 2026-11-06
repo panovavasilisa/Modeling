@@ -10,6 +10,8 @@ public:
     explicit AnimTab(QWidget* parent = nullptr);
     void updateState(int day, int stockCount, const std::vector<int>& loads, int newRequests);
     void resetAnimation();
+    void pauseAnimation();
+    void resumeAnimation();
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -20,9 +22,9 @@ private slots:
 private:
     struct Courier {
         double x, y;
+        double baseY;
+        double targetX;
         double speed;
-        double baseY;     // Базовая линия движения
-        double targetX;   // Куда едет (склад или город)
         enum State { Idle, GoingToCity, Returning } state;
         int deliveries;
     };

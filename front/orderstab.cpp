@@ -22,7 +22,7 @@ OrdersTab::OrdersTab(QWidget* parent) : QWidget(parent) {
 
 void OrdersTab::refresh() {
     model->removeRows(0, model->rowCount());
-    const auto& r = simulation_result();
+    const auto& r = simulation_result(); //K
     for (const auto& o : r.completed_orders) {
         QList<QStandardItem*> row;
         row << new QStandardItem(QString::number(o.order_id));

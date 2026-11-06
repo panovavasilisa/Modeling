@@ -12,7 +12,7 @@ ResultsTab::ResultsTab(QWidget* parent) : QWidget(parent) {
 }
 
 void ResultsTab::refresh() {
-    const auto& r = simulation_result();
+    const auto& r = simulation_result(); //K
     QString s;
     s += "=== ИТОГИ СИМУЛЯЦИИ ===\n\n";
     s += QString("Доход:              %1 руб.\n").arg(r.totals.income, 0, 'f', 2);
